@@ -7,6 +7,7 @@ private:
 
 public:
 	Money();
+	Money(int x, int y);
 	virtual ~Money();
 
 	void Interact(GameObject* obj); // Interact with object that is overlapped and ready to be execute

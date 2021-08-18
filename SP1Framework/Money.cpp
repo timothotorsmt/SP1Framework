@@ -6,10 +6,19 @@ int Money::totalMoney = 0;
 Money::Money()
 {
 	totalMoney++;
-	myPosition.UpdatePosition(rand() % 50 + 0, rand() % 24 + 0, true);
-	myPosition.SetMarker('M');
+	UpdatePosition(rand() % 50 + 0, rand() % 24 + 0, true);
+	SetMarker('M');
 
-	std::cout << "Money have been placed!" << std::endl;
+	std::cout << "Money have been placed! (With Random Position)" << std::endl;
+}
+
+Money::Money(int x, int y)
+{
+	totalMoney++;
+	UpdatePosition(x, y, true);
+	SetMarker('M');
+
+	std::cout << "Money have been placed! (With Position)" << std::endl;
 }
 
 Money::~Money()
@@ -25,7 +34,7 @@ void Money::Interact(GameObject* obj)
 
 bool Money::isCollided(GameObject* obj)
 {
-	if (myPosition.GetPosX() == obj->GetPosX() && myPosition.GetPosY() == obj->GetPosY())
+	if (GetPosX() == obj->GetPosX() && GetPosY() == obj->GetPosY())
 		return true;
 	else
 		return false;
