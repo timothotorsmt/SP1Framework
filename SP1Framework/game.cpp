@@ -12,6 +12,7 @@
 #include "GameObject.h"
 
 double  g_dElapsedTime;
+double  g_pregameElapsedtime;
 double  g_dDeltaTime;
 SKeyEvent g_skKeyEvent[K_COUNT];
 SMouseEvent g_mouseEvent;
@@ -43,8 +44,9 @@ int totalItem;
 void init( void )
 {
     // Set precision for floating point output
-    g_dElapsedTime = 0.0;    
-
+    g_dElapsedTime = 0.0; 
+    g_pregameElapsedtime = 0.0;
+    
     // sets the initial state for the game
     g_eGameState = S_SPLASHSCREEN;
 
@@ -224,15 +226,18 @@ void gameplayMouseHandler(const MOUSE_EVENT_RECORD& mouseEvent)
 //--------------------------------------------------------------
 void update(double dt)
 {
-    // get the delta time
-    g_dElapsedTime += dt;
+    //get the delta time
     g_dDeltaTime = dt;
 
     switch (g_eGameState)
     {
-        case S_SPLASHSCREEN : splashScreenWait(); // game logic for the splash screen
+        case S_SPLASHSCREEN : 
+            splashScreenWait(); // game logic for the splash screen
+            g_pregameElapsedtime += dt;
             break;
-        case S_GAME: updateGame(); // gameplay logic when we are in the game
+        case S_GAME: 
+            updateGame(); // gameplay logic when we are in the game
+            g_dElapsedTime += dt;
             break;
     }
 }
@@ -240,7 +245,7 @@ void update(double dt)
 
 void splashScreenWait()    // waits for time to pass in splash screen
 {
-    if (g_dElapsedTime > 3.0) // wait for 3 seconds to switch to game mode, else do nothing
+    if (g_pregameElapsedtime > 3.0) // wait for 3 seconds to switch to game mode, else do nothing
         g_eGameState = S_GAME;
 }
 
@@ -379,16 +384,17 @@ void renderToScreen()
 
 void renderSplashScreen()  // renders the splash screen
 {
+    //TODO: Display title here
     COORD c = g_Console.getConsoleSize();
-    c.Y /= 3;
+    c.Y = (c.Y / 3) * 2;
     c.X = c.X / 2 - 9;
-    g_Console.writeToBuffer(c, "Welcome to GG! Let's do this!", 0x03);
+    g_Console.writeToBuffer(c, "Use arrow keys to move", BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
     c.Y += 1;
-    c.X = g_Console.getConsoleSize().X / 2 - 20;
-    g_Console.writeToBuffer(c, "Press <Space> to change character colour", 0x09);
+    c.X = g_Console.getConsoleSize().X / 2 - 14;
+    g_Console.writeToBuffer(c, "Left click to switch on lights", BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
     c.Y += 1;
     c.X = g_Console.getConsoleSize().X / 2 - 9;
-    g_Console.writeToBuffer(c, "Press 'Esc' to quit", 0x09);
+    g_Console.writeToBuffer(c, "Press 'Esc' to quit", BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
 }
 
 void renderGame()
@@ -437,45 +443,14 @@ void renderCharacter()
 // Modified by denniswong10 (Display UI into the screen)
 void renderFramerate()
 {
-    COORD c;
-    // displays the framerate
-    std::ostringstream ss;
-
-    // Show Player Position
-    if (Player::CheckOnPlayer())
-    {
-        ss.str("");
-        ss << "Pillar Found (#): " << Pillar::GetPillarCount();
-        c.X = 0;
-        c.Y = 0;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "Money Found ($): $ " << Money::GetMoneyCount();
-        c.X = 0;
-        c.Y = 1;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "X: " << myPlayer->GetPosX();
-        c.X = 0;
-        c.Y = 23;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "Y: " << myPlayer->GetPosY();
-        c.X = 0;
-        c.Y = 24;
-        g_Console.writeToBuffer(c, ss.str());
-    }
-    else
-    {
-        ss.str("");
-        ss << "GG! Your player have been killed!";
-        c.X = 0;
-        c.Y = 1;
-        g_Console.writeToBuffer(c, ss.str());
-    }
+     //COORD c;
+    //// displays the framerate
+    //std::ostringstream ss;
+    //ss << std::fixed << std::setprecision(3);
+    //ss << 1.0 / g_dDeltaTime << "fps";
+    //c.X = g_Console.getConsoleSize().X - 9;
+    //c.Y = 0;
+    //g_Console.writeToBuffer(c, ss.str());
 }
 
 // this is an example of how you would use the input events
@@ -554,5 +529,26 @@ void renderInputEvents()
     */
 }
 
+void renderUI()
+{
+    COORD c;
+    c.X = 41;
+    c.Y = 9;
+    std::string outputStr;
+    outputStr = "Money Stolen: $" + std::to_string(Player::CheckOnMoney() * 1000);
+    g_Console.writeToBuffer(c, outputStr, BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+    c.Y++;
+    outputStr = "Current location: " + test_grid.getName();
+    g_Console.writeToBuffer(c, outputStr, BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+    c.Y++;
+    outputStr = "Time remaining: " + std::to_string((int)(181 - g_dElapsedTime)) + " secs";
+    if (180 - g_dElapsedTime == 0) {
+        g_bQuitGame = true;
+    }
+    g_Console.writeToBuffer(c, outputStr, BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+    c.Y += 2;
+    outputStr = "Objective: " + level_map.getObjective();
+    g_Console.writeToBuffer(c, outputStr, BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+}
 
 
