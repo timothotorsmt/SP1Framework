@@ -1,10 +1,12 @@
 #include "Grid.h"
 #include "Colours.h"
 
+//construct grid
 Grid::Grid() : room_pos("--"), name("")
 {
 	for (int j = 0; j < 15; j++) {
 		for (int i = 0; i < 35; i++) {
+			//set tile position
 			gridMap[j][i].get_tile_pos().setCoordinates(j, i, true);
 			gridMap[j][i].set_tile_char('#');
 			gridMap[j][i].set_tile_color();
@@ -75,7 +77,7 @@ void Grid::setDoorConfig()
 	if (doorConfig[0] == 1) {
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 2; j++) {
-				gridMap[j][15 + i].set_tile_char(' ');
+				gridMap[j][15 + i].set_tile_char('.');
 				gridMap[j][15 + i].set_tile_color();
 			}
 		}
@@ -84,7 +86,7 @@ void Grid::setDoorConfig()
 	if (doorConfig[1] == 1) {
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 2; j++) {
-				gridMap[13 + j][15 + i].set_tile_char(' ');
+				gridMap[13 + j][15 + i].set_tile_char('.');
 				gridMap[13 + j][15 + i].set_tile_color();
 			}
 		}
@@ -93,7 +95,7 @@ void Grid::setDoorConfig()
 	if (doorConfig[2] == 1) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 7; j++) {
-				gridMap[i + 6][j].set_tile_char(' ');
+				gridMap[i + 6][j].set_tile_char('.');
 				gridMap[i + 6][j].set_tile_color();
 			}
 		}
@@ -102,8 +104,10 @@ void Grid::setDoorConfig()
 	if (doorConfig[3] == 1) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 7; j++) {
-				gridMap[i + 6][j + 28].set_tile_char(' ');
+				gridMap[i + 6][j + 28].set_tile_char('.');
 				gridMap[i + 6][j + 28].set_tile_color();
+
+
 			}
 		}
 	}
@@ -122,7 +126,7 @@ void Grid::importGrid(std::string file_name)
 		for (int j = 0; j < 21; j++) {
 			char c;
 			readfile >> c;
-			gridMap[2 + i][7 + j].set_tile_char(' ');
+			gridMap[2 + i][7 + j].set_tile_char(c);
 			gridMap[2 + i][7 + j].set_tile_color();
 		}
 	}
