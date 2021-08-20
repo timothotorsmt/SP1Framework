@@ -27,6 +27,7 @@ public:
 	void setDoorConfig(int i);
 	void setDoorConfig();
 	void setRoomPos(std::string s);
+	void set_lights(bool b);
 
 	//others
 	void importGrid(std::string fileName);
