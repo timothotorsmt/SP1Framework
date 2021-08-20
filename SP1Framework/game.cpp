@@ -240,7 +240,7 @@ void update(double dt)
 
 void splashScreenWait()    // waits for time to pass in splash screen
 {
-    if (g_dElapsedTime > 3.0) // wait for 3 seconds to switch to game mode, else do nothing
+     if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) 
         g_eGameState = S_GAME;
 }
 
