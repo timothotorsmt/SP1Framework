@@ -2,36 +2,38 @@
 //
 //
 #include "game.h"
+#include "Grid.h"
+#include "Map.h"
 #include "Framework\console.h"
+#include "Colours.h"
+#include "Player.h"
+#include "Money.h"
+#include "GameObject.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include "Player.h"
-#include "Money.h"
-#include "Pillar.h"
-#include "GameObject.h"
+#include <vector>
+#define BACKMATCHTEXT (BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
+#define WHITETEXT (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
 
 double  g_dElapsedTime;
+double  g_pregameElapsedtime;
 double  g_dDeltaTime;
 SKeyEvent g_skKeyEvent[K_COUNT];
 SMouseEvent g_mouseEvent;
 
 // Game specific variables here
+Map level_map;
+Grid test_grid;
+Player* myPlayer;
+int points;
+Money* moneyArr[3];
+int totalItem;
 SGameChar   g_sChar;
-EGAMESTATES g_eGameState = S_SPLASHSCREEN; // initial state
+EGAMESTATES g_eGameState; // initial state
 
 // Console object
-Console g_Console(80, 25, "SP1 Framework");
-
-// Implemented by denniswong10 (Define a player object)
-GameObject* myPlayer;
-
-// Suggestion by denniswong10 (Define Pillar and Item)
-GameObject* myPillar[10];
-GameObject* myItem[3];
-
-int totalPillar;
-int totalItem;
+Console g_Console(100, 22, "SP1Grp5_Timothy_Jeremy_Dennis_Aloysius");
 
 //--------------------------------------------------------------
 // Purpose  : Initialisation function
@@ -43,14 +45,15 @@ int totalItem;
 void init( void )
 {
     // Set precision for floating point output
-    g_dElapsedTime = 0.0;    
+    g_dElapsedTime = 0.0; 
+    g_pregameElapsedtime = 0.0;
+    points = 0;
 
     // sets the initial state for the game
     g_eGameState = S_SPLASHSCREEN;
 
     g_sChar.m_cLocation.X = g_Console.getConsoleSize().X / 2;
     g_sChar.m_cLocation.Y = g_Console.getConsoleSize().Y / 2;
-    g_sChar.m_bActive = true;
     // sets the width, height and the font name to use in the console
     g_Console.setConsoleFont(0, 16, L"Consolas");
 
@@ -61,11 +64,6 @@ void init( void )
     // Implemented by denniswong10 (Create player)
     myPlayer = new Player;
 
-    // Suggestion by denniswong10 (Create Pillar and Item)
-    for (int i = 0; i < 3; i++) myItem[i] = new Money;
-    for (int i = 0; i < 10; i++) myPillar[i] = new Pillar;
-
-    totalPillar = Pillar::GetPillarCount();
     totalItem = Money::GetMoneyCount();
 }
 
@@ -80,7 +78,8 @@ void shutdown( void )
 {
     // Reset to white text on black background
     colour(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
-
+    
+    //delete variables ?? any??
     g_Console.clearBuffer();
 }
 
@@ -126,6 +125,8 @@ void keyboardHandler(const KEY_EVENT_RECORD& keyboardEvent)
         break;
     case S_GAME: gameplayKBHandler(keyboardEvent); // handle gameplay keyboard event 
         break;
+    default: gameplayKBHandler(keyboardEvent);
+        break;
     }
 }
 
@@ -149,7 +150,7 @@ void mouseHandler(const MOUSE_EVENT_RECORD& mouseEvent)
 {    
     switch (g_eGameState)
     {
-    case S_SPLASHSCREEN: // don't handle anything for the splash screen
+    case S_SPLASHSCREEN: gameplayMouseHandler(mouseEvent);
         break;
     case S_GAME: gameplayMouseHandler(mouseEvent); // handle gameplay mouse event
         break;
@@ -234,9 +235,12 @@ void update(double dt)
             break;
         case S_GAME: updateGame(); // gameplay logic when we are in the game
             break;
+        case S_TIMESUP:
+            restartGameUpdate();
+            g_pregameElapsedtime += dt;
+            break;
     }
 }
-
 
 void splashScreenWait()    // waits for time to pass in splash screen
 {
@@ -248,6 +252,18 @@ void updateGame()       // gameplay logic
 {
     processUserInput(); // Waiting to be Implemented (From denniswong10)
     if (Player::CheckOnPlayer()) { moveCharacter(); } // Implemented by denniswong10 (Update MoveCharacter)
+}
+
+void restartGameUpdate()
+{
+    if (g_skKeyEvent[K_SPACE].keyReleased) {
+        // Set precision for floating point output
+        init();
+        return;
+    }
+    if (g_pregameElapsedtime > 20.0) {
+        g_bQuitGame = true;
+    }
 }
 
 // Modified by denniswong10 (I don't like how the default one operator it. So i mod it)
@@ -262,13 +278,6 @@ void moveCharacter()
     if (g_skKeyEvent[K_LEFT].keyDown) direction = 2;
     if (g_skKeyEvent[K_DOWN].keyDown) direction = 3;
     if (g_skKeyEvent[K_RIGHT].keyDown) direction = 4;
-    
-    // Self-destruct
-    if (g_skKeyEvent[K_SPACE].keyReleased)
-    {
-        delete myPlayer;
-        myPlayer = nullptr;
-    }
 
     // Player still survive. If not skip this
     if (Player::CheckOnPlayer())
@@ -285,53 +294,64 @@ void moveCharacter()
             }
         }
         
-        // Player Direction (Collision is false then move)
-        if (myPillar[index] == nullptr || (myPillar[index] != nullptr && !myPlayer->checkForCollision(myPillar[index], direction)))
+        //done by dennis wong
+        // Player still survive. If not skip this
+        if (myPlayer != nullptr && direction != 0)
         {
-            if (direction != 0) Beep(1440, 30); 
-
-            switch (direction)
+            // Player Direction (Collision is false then move)
+            if (myPlayer->checkForCollision(level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')), direction) == false)
             {
+                switch (direction)
+                {
+                    //TODO: find out why character still can move out
                 case 1: // UP
-                    
-                    if (myPlayer->GetPosY() > 0) myPlayer->MoveObject(0, -1);
+                    if ((myPlayer->getPosition().getRow() - 1) > -1) myPlayer->MoveObject(0, -1);
                     break;
 
                 case 2: // LEFT
-                    if (myPlayer->GetPosX() > 0) myPlayer->MoveObject(-1, 0);
+                    if ((myPlayer->getPosition().getColumn() - 1) > -1) myPlayer->MoveObject(-1, 0);
                     break;
 
                 case 3: // DOWN
-                    if (myPlayer->GetPosY() < 24) myPlayer->MoveObject(0, 1);
+                    if ((myPlayer->getPosition().getRow() + 1) < 15) myPlayer->MoveObject(0, 1);
                     break;
 
                 case 4: // RIGHT
-                    if (myPlayer->GetPosX() < 50) myPlayer->MoveObject(1, 0);
+                    if ((myPlayer->getPosition().getColumn() + 1) < 35) myPlayer->MoveObject(1, 0);
                     break;
 
                 default: // STOP
                     break;
+                }
             }
-        }
+            else {
+                g_Console.writeToBuffer(0, 0, "Invalid movement");
+            }
 
-        // Player Movement (Only update player position and reset direction)
-        direction = 0;
-        g_sChar.m_cLocation.X = myPlayer->GetPosX();
-        g_sChar.m_cLocation.Y = myPlayer->GetPosY();
-        
-        // Item Collector from Player (Money, Jewel)
-        index = 0;
+            // Item Collector from Player (Money, Jewel)
+            index = 0;
+            direction = 0;
 
-        for (int i = 0; i < totalItem; i++)
-        {
-            if (myItem[i] != nullptr && myPlayer->isCollided(myItem[i]))
+            for (int i = 0; i < totalItem; i++)
             {
-                myPlayer->Interact(myItem[i]);
-                myItem[i]->Interact(myPlayer);
-                break;
+                if (moneyArr[i] != nullptr && myPlayer->isCollided(moneyArr[i]))
+                {
+                    myPlayer->Interact(moneyArr[i]);
+                    moneyArr[i]->Interact(myPlayer);
+                    break;
+                }
+            }
+
+            //added by timothy
+            if (myPlayer->checkIsOOB() != 0) {
+                g_sChar.m_cLocation.X = myPlayer->getPosition().getColumn() + 10;
+                g_sChar.m_cLocation.Y = myPlayer->getPosition().getRow() + 3;
+            }
+            else {
+                g_sChar.m_cLocation.X = myPlayer->getPosition().getColumn() + 10;
+                g_sChar.m_cLocation.Y = myPlayer->getPosition().getRow() + 3;
             }
         }
-    }
 }
 
 // Waiting to be modified (From denniswong10)
@@ -357,18 +377,21 @@ void render()
     {
     case S_SPLASHSCREEN: renderSplashScreen();
         break;
-    case S_GAME: renderGame();
+    case S_GAME: 
+        renderGame();
+        renderFramerate();      // renders debug information, frame rate, elapsed time, etc
+        break;
+    default:
+        rendertimesup();
         break;
     }
-    renderFramerate();      // renders debug information, frame rate, elapsed time, etc
-    renderInputEvents();    // renders status of input events
     renderToScreen();       // dump the contents of the buffer to the screen, one frame worth of game
 }
 
 void clearScreen()
 {
     // Clears the buffer with this colour attribute
-    g_Console.clearBuffer(0x1F);
+    g_Console.clearBuffer(COLOURS::DARKGREY);
 }
 
 void renderToScreen()
@@ -379,183 +402,173 @@ void renderToScreen()
 
 void renderSplashScreen()  // renders the splash screen
 {
+   //display title
     COORD c = g_Console.getConsoleSize();
-    c.Y /= 3;
+    c.Y = (c.Y / 3) * 2;
     c.X = c.X / 2 - 9;
-    g_Console.writeToBuffer(c, "Welcome to GG! Let's do this!", 0x03);
+    g_Console.writeToBuffer(c, "Use arrow keys to move", BACKMATCHTEXT);
     c.Y += 1;
-    c.X = g_Console.getConsoleSize().X / 2 - 20;
-    g_Console.writeToBuffer(c, "Press <Space> to change character colour", 0x09);
+    c.X = g_Console.getConsoleSize().X / 2 - 14;
+    g_Console.writeToBuffer(c, "Left click to switch on lights", BACKMATCHTEXT);
     c.Y += 1;
-    c.X = g_Console.getConsoleSize().X / 2 - 9;
-    g_Console.writeToBuffer(c, "Press 'Esc' to quit", 0x09);
+    c.X = g_Console.getConsoleSize().X / 2 - 8;
+    g_Console.writeToBuffer(c, "Press 'Esc' to quit", BACKMATCHTEXT);
     c.Y += 1;
     c.X = g_Console.getConsoleSize().X / 2 - 11;
-    g_Console.write to buffer(c, "Press ENTER to start", 0x09);
+    g_Console.writeToBuffer(c, "Press ENTER to start", BACKMATCHTEXT);
 }
 
 void renderGame()
 {
     renderMap();        // Suggestion changes from denniswong10
     renderCharacter();  // Implemented by denniswong10 (Update renderCharacter)
+    renderUI();
 }
 
 void renderMap() // Suggestion by denniswong10 (Display object into the screen)
 {
-    // Set coordiate for object
-    COORD pos;
-
-    // Display Money
-    if (myItem[0] != nullptr)
-    {
-        for (int i = 0; i < totalItem; i++)
-        {
-            pos.X = myItem[i]->GetPosX();
-            pos.Y = myItem[i]->GetPosY();
-            g_Console.writeToBuffer(pos, myItem[i]->GetMarker());
+    //TODO: figureoutwhydontwork
+    COORD c;
+    g_Console.writeToBuffer(10, 2, "o", BACKGROUND_INTENSITY | FOREGROUND_RED);
+    std::string outputStr = "Live: Camera " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getRoomPos();
+    g_Console.writeToBuffer(12, 2, outputStr, BACKMATCHTEXT);
+    renderLocationMap(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+    if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+        for (int i = 3; i < 18; i++) {
+            for (int j = 10; j < 45; j++) {
+                c.X = j;
+                c.Y = i;
+                level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).set_lights(true);
+                g_Console.writeToBuffer(c, " ", COLOURS::GREY);
+                g_Console.writeToBuffer(10, 18, "System: Error 404: The lights have been hacked", BACKMATCHTEXT);
+                g_Console.writeToBuffer(18, 10, "Error: No signal", BACKMATCHTEXT);
+            }
         }
     }
-
-    // Display Pillar
-    for (int i = 0; i < totalPillar; i++)
-    {
-        pos.X = myPillar[i]->GetPosX();
-        pos.Y = myPillar[i]->GetPosY();
-        g_Console.writeToBuffer(pos, myPillar[i]->GetMarker());
+    else {
+        level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).set_lights(false);
+        std::string outputStr = "System: Location name: " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getName();
+        g_Console.writeToBuffer(10, 18, outputStr, BACKMATCHTEXT);
     }
+
+    level_map.update_minmap_char(*myPlayer);
+    for (int j = 3; j < 7; j++) {
+        for (int i = 48; i < 56; i += 2) {
+            c.X = i;
+            c.Y = j;
+            if (level_map.get_minmap_char((i - 48) / 2, j - 3) == 'J') {
+                g_Console.writeToBuffer(48, 3, "  ", COLOURS::DARKGOLD);
+            }
+            if (level_map.get_minmap_char((i - 48) / 2, j - 3) == 'X') {
+                g_Console.writeToBuffer(c, "  ", COLOURS::RED);
+            }
+            else {
+                g_Console.writeToBuffer(c, "  ", COLOURS::WHITE);
+            }
+        }
+    }
+    outputStr = "System: Now in " + std::to_string(myPlayer->getRoomPos('x')) + ", " + std::to_string(myPlayer->getRoomPos('y'));
+    g_Console.writeToBuffer(48, 7, outputStr, BACKMATCHTEXT);
 }
 
 // Modified by denniswong10 (Display character into the screen)
 void renderCharacter()
 {
     // Draw the location of the character
-    WORD charColor = 0x0C;
-    if (g_sChar.m_bActive)
-    {
-        charColor = 0x0A;
-    }
-    if (myPlayer != nullptr) g_Console.writeToBuffer(g_sChar.m_cLocation, myPlayer->GetMarker(), charColor);
+    if (myPlayer != nullptr) g_Console.writeToBuffer(g_sChar.m_cLocation.X, g_sChar.m_cLocation.Y, myPlayer->getEntityChar(), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 }
 
 // Modified by denniswong10 (Display UI into the screen)
 void renderFramerate()
 {
-    COORD c;
-    // displays the framerate
-    std::ostringstream ss;
-
-    // Show Player Position
-    if (Player::CheckOnPlayer())
-    {
-        ss.str("");
-        ss << "Pillar Found (#): " << Pillar::GetPillarCount();
-        c.X = 0;
-        c.Y = 0;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "Money Found ($): $ " << Money::GetMoneyCount();
-        c.X = 0;
-        c.Y = 1;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "X: " << myPlayer->GetPosX();
-        c.X = 0;
-        c.Y = 23;
-        g_Console.writeToBuffer(c, ss.str());
-
-        ss.str("");
-        ss << "Y: " << myPlayer->GetPosY();
-        c.X = 0;
-        c.Y = 24;
-        g_Console.writeToBuffer(c, ss.str());
-    }
-    else
-    {
-        ss.str("");
-        ss << "GG! Your player have been killed!";
-        c.X = 0;
-        c.Y = 1;
-        g_Console.writeToBuffer(c, ss.str());
-    }
+    //COORD c;
+    //// displays the framerate
+    //std::ostringstream ss;
+    //ss << std::fixed << std::setprecision(3);
+    //ss << 1.0 / g_dDeltaTime << "fps";
+    //c.X = g_Console.getConsoleSize().X - 9;
+    //c.Y = 0;
+    //g_Console.writeToBuffer(c, ss.str());
 }
 
-// this is an example of how you would use the input events
-void renderInputEvents()
+void renderUI()
 {
-    /* keyboard events
-    COORD startPos = {50, 2};
-    std::ostringstream ss;
-    std::string key;
-    for (int i = 0; i < K_COUNT; ++i)
-    {
-        ss.str("");
-        switch (i)
-        {
-        case K_UP: key = "UP";
-            break;
-        case K_DOWN: key = "DOWN";
-            break;
-        case K_LEFT: key = "LEFT";
-            break;
-        case K_RIGHT: key = "RIGHT";
-            break;
-        case K_SPACE: key = "SPACE";
-            break;
-        default: continue;
-        }
-        if (g_skKeyEvent[i].keyDown)
-            ss << key << " pressed";
-        else if (g_skKeyEvent[i].keyReleased)
-            ss << key << " released";
-        else
-            ss << key << " not pressed";
-
-        COORD c = { startPos.X, startPos.Y + i };
-        g_Console.writeToBuffer(c, ss.str(), 0x17);
+    COORD c;
+    c.X = 48;
+    c.Y = 9;
+    std::string outputStr;
+    outputStr = "Money Stolen: $" + std::to_string(Player::CheckOnMoney() * 1000);
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    c.Y++;
+    //edited by aloysius (timer)
+    double timer = (181 - g_dElapsedTime);
+    outputStr = "Time remaining: " + std::to_string((int)timer) + " seconds";
+    if ((181 - g_dElapsedTime) < 0) {
+        g_pregameElapsedtime = 0.0;
+        g_eGameState = S_TIMESUP;
     }
-
-    // mouse events    
-    ss.str("");
-    ss << "Mouse position (" << g_mouseEvent.mousePosition.X << ", " << g_mouseEvent.mousePosition.Y << ")";
-    g_Console.writeToBuffer(g_mouseEvent.mousePosition, ss.str(), 0x59);
-    ss.str("");
-    switch (g_mouseEvent.eventFlags)
-    {
-    case 0:
-        if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED)
-        {
-            ss.str("Left Button Pressed");
-            g_Console.writeToBuffer(g_mouseEvent.mousePosition.X, g_mouseEvent.mousePosition.Y + 1, ss.str(), 0x59);
-        }
-        else if (g_mouseEvent.buttonState == RIGHTMOST_BUTTON_PRESSED)
-        {
-            ss.str("Right Button Pressed");
-            g_Console.writeToBuffer(g_mouseEvent.mousePosition.X, g_mouseEvent.mousePosition.Y + 2, ss.str(), 0x59);
-        }
-        else
-        {
-            ss.str("Some Button Pressed");
-            g_Console.writeToBuffer(g_mouseEvent.mousePosition.X, g_mouseEvent.mousePosition.Y + 3, ss.str(), 0x59);
-        }
-        break;
-    case DOUBLE_CLICK:
-        ss.str("Double Clicked");
-        g_Console.writeToBuffer(g_mouseEvent.mousePosition.X, g_mouseEvent.mousePosition.Y + 4, ss.str(), 0x59);
-        break;        
-    case MOUSE_WHEELED:
-        if (g_mouseEvent.buttonState & 0xFF000000)
-            ss.str("Mouse wheeled down");
-        else
-            ss.str("Mouse wheeled up");
-        g_Console.writeToBuffer(g_mouseEvent.mousePosition.X, g_mouseEvent.mousePosition.Y + 5, ss.str(), 0x59);
-        break;
-    default:        
-        break;
-    }
-    */
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    c.Y += 2;
+    outputStr = "Objective: " + level_map.getObjective();
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
 }
 
+void renderLocationMap(int x, int y) {
+    COORD c;
+    for (int i = 3; i < 18; ++i) {
+        for (int j = 10; j < 45; j++) {
+            c.X = j;
+            c.Y = i;
+            g_Console.writeToBuffer(c, " ", level_map.get_map_grid(x, y).getTile(j - 10, i - 3).get_tile_color());
+        }
+    }
+}
 
+void rendertimesup()
+{
+    COORD c;
+    std::ifstream readfile("time'sup.txt");
+    std::string outputStr;
+    int i = 0;
+    while (std::getline(readfile, outputStr)) {
+        c.X = 4;
+        c.Y = i;
+        g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+        i++;
+    }
+    c.Y += 3;
+    //TODO: display points
+    c.X = g_Console.getConsoleSize().X / 2 - 11;
+    g_Console.writeToBuffer(c, "Press <space> to retry", BACKMATCHTEXT);
+    c.Y += 2;
+    c.X = g_Console.getConsoleSize().X / 2 - 8;
+    outputStr = "Continue?     " + std::to_string((int)(20 - g_pregameElapsedtime));
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+}
+
+void renderWinScreen() {
+    COORD c;
+    std::ifstream readfile("win.txt");
+    std::string outputStr;
+    int i = 0;
+    while (std::getline(readfile, outputStr)) {
+        c.X = 4;
+        c.Y = i;
+        g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+        i++;
+    }
+}
+
+void renderLoseScreen() {
+    COORD c;
+    std::ifstream readfile("failure.txt");
+    std::string outputStr;
+    int i = 0;
+    while (std::getline(readfile, outputStr)) {
+        c.X = 4;
+        c.Y = i;
+        g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+        i++;
+    }
+}
 
