@@ -34,6 +34,7 @@ Grid Map::get_map_grid(int x, int y)
 
 bool Map::check_is_stolen()
 {
+	is_stolen = (player.CheckOnJewel() == true) ? (true) : (false);
 	return is_stolen;
 }
 
@@ -52,35 +53,28 @@ std::string Map::getObjective()
 	}
 }
 
-void Map::update_minmap_char()
+void Map::update_minmap_char(Player& player)
 {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			minmap[i][j] = ' ';
 		}
 	}
-	if (is_stolen == false) {
+	if (player.CheckOnJewel() == true) {
 		minmap[0][0] = 'J';
 	}
-	minmap[isCurrentlyIn[0]][isCurrentlyIn[1]] = 'X';
-}
+	minmap[player.getRoomPos('y')][player.getRoomPos('x')] = 'X';
 
-void Map::moveBox(int direction)
+void Map::distributerandomfiles()
 {
-	switch (direction) {
-	case 1:
-		isCurrentlyIn[0] -= 1;
-		break;
-	case 2:
-		isCurrentlyIn[0] += 1;
-		break;
-	case 3:
-		isCurrentlyIn[1] -= 1;
-		break;
-	case 4:
-		isCurrentlyIn[1] += 1;
-		break;
-	default:
-		break;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (!(i == 0 && j == 0) || !(i == 3 && j == 3)) {
+				int randNum = std::rand() % filenames.size();
+				level_map[i][j].importGrid(filenames[randNum]);
+			}
+		}
 	}
+	level_map[0][0].importGrid("jewelroom.txt");
+	level_map[3][3].importGrid("spawn.txt");
 }
