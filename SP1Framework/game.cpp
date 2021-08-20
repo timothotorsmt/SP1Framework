@@ -240,7 +240,7 @@ void update(double dt)
 
 void splashScreenWait()    // waits for time to pass in splash screen
 {
-    if (g_dElapsedTime > 3.0) // wait for 3 seconds to switch to game mode, else do nothing
+    if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) 
         g_eGameState = S_GAME;
 }
 
@@ -391,7 +391,12 @@ void renderSplashScreen()  // renders the splash screen
     g_Console.writeToBuffer(c, "Press 'Esc' to quit", 0x09);
     c.Y += 1;
     c.X = g_Console.getConsoleSize().X / 2 - 11;
-    g_Console.write to buffer(c, "Press ENTER to start", 0x09);
+    g_Console.write to buffer(c, "Press here to start", 0x09);
+    ss.str("");
+    ss << "Mouse position (" << g_mouseEvent.mousePosition.X << ", " << g_mouseEvent.mousePosition.Y << ")";
+    g_Console.writeToBuffer(g_mouseEvent.mousePosition, ss.str(), 0x59);
+    ss.str("");
+    
 }
 
 void renderGame()
