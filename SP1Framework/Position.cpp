@@ -1,48 +1,42 @@
 #include "Position.h"
-#include <iostream>
 
-Position::Position()
+Position::Position(int r, int c) : row(r), column(c)
 {
-	PosX = 0;
-	PosY = 0;
-	markLabel = '?';
+}
+
+Position::Position() : row(0), column(0)
+{
 }
 
 Position::~Position()
 {
-	std::cout << "Position have been removed from GameObject!" << std::endl;
 }
 
-void Position::UpdatePosition(int x, int y, bool set)
+int Position::getRow()
 {
-	if (set)
-	{
-		PosX = x;
-		PosY = y;
+	return row;
+}
+
+int Position::getColumn()
+{
+	return column;
+}
+
+void Position::setCoordinates(int c, int r, bool set)
+{
+	if (set) {
+		row = r;
+		column = c;
 	}
-	else
-	{
-		PosX += x;
-		PosY += y;
+	else {
+		row += r;
+		column += c;
 	}
 }
 
-void Position::SetMarker(char m)
+bool Position::isEqualPos(Position otherPos)
 {
-	markLabel = m;
-}
-
-const int Position::GetPosX()
-{
-	return PosX;
-}
-
-const int Position::GetPosY()
-{
-	return PosY;
-}
-
-const char Position::GetMarker()
-{
-	return markLabel;
+	if (row != otherPos.getRow()) return false;
+	if (column != otherPos.getColumn()) return false;
+	return true;
 }
