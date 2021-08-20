@@ -1,46 +1,51 @@
 #include "Money.h"
 #include <iostream>
 
+//done by dennis wong
+//edited by timothy (lightly)
 int Money::totalMoney = 0;
 
-Money::Money()
+//made by dennis wong
+//edited by timothy
+//edited by jeremy
+Money::Money(Grid level_map)
 {
 	totalMoney++;
-	UpdatePosition(rand() % 50 + 0, rand() % 24 + 0, true);
-	SetMarker('M');
-
-	std::cout << "Money have been placed! (With Random Position)" << std::endl;
+	//TODO: make this fit into the maps
+	int x = 0;
+	int y = 0;
+	while (level_map.getTile(x + 7, y + 2).get_tile_char() != '?') {
+		x = rand() % 21;
+		y = rand() % 11;
+	}
+	objectPosition.setCoordinates(x + 7, y + 2, true);
+	entity_char = 'M';
 }
 
-Money::Money(int x, int y)
-{
-	totalMoney++;
-	UpdatePosition(x, y, true);
-	SetMarker('M');
-
-	std::cout << "Money have been placed! (With Position)" << std::endl;
-}
-
+//done by dennis
 Money::~Money()
 {
 	totalMoney--;
-	std::cout << "Money have been taken by someone else!" << std::endl;
 }
 
-void Money::Interact(GameObject* obj) 
+//done by dennis
+void Money::Interact(GameObject* obj)
 {
 	delete this;
 }
 
+//done by dennis
+//edited by jeremy
 bool Money::isCollided(GameObject* obj)
 {
-	if (GetPosX() == obj->GetPosX() && GetPosY() == obj->GetPosY())
+	if (objectPosition.isEqualPos(obj->getObjectPosition()))
 		return true;
 	else
 		return false;
 }
 
-bool Money::checkForCollision(GameObject* obj, int direction)
+//done by dennis wong
+bool Money::checkForCollision(Grid map, int direction)
 {
 	return false;
 }
@@ -50,6 +55,7 @@ void Money::MoveObject(int x, int y)
 	// ??? No move function ???
 }
 
+//done by dennis wong
 int Money::GetMoneyCount()
 {
 	return totalMoney;
