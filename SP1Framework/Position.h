@@ -1,21 +1,25 @@
 #pragma once
+
+//done by dennis wong
+//edited by timothy
 class Position
 {
 private:
-	int PosX;
-	int PosY;
-	char markLabel;
-
+	int row;
+	int column;
 public:
+	Position(int r, int c);
 	Position();
 	~Position();
 
-	const int GetPosX();
-	const int GetPosY();
-	const char GetMarker();
+	//getters
+	int getRow();
+	int getColumn();
 
-protected:
-	void UpdatePosition(int x, int y, bool set);
-	void SetMarker(char m);
+	//setters;
+	void setCoordinates(int c, int r, bool set);
+
+	//others
+	bool isEqualPos(Position otherPos);
 };
 
