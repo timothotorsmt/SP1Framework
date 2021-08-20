@@ -63,18 +63,22 @@ void Tile::set_tile_color()
 	switch (tileCharacter)
 	{
 	case ('#'):
-		tile_color = COLOURS::DARKRED;
+		tile_color = COLOURS::BLACKDARKGREY;
 		break;
-	case ('P'):
-		tile_color = COLOURS::AQUA;
-		break;
-	case (' '):
+	case ('.'):
 		tile_color = COLOURS::WHITE;
 		break;
-	case ('A'):
+	case ('G'):
 		tile_color = COLOURS::BLUE;
+		break;
+	case ('M'):
+		tile_color = COLOURS::GREEN;
+		break;
+	case ('J'):
+		tile_color = COLOURS::DARKGOLD;
 		break;
 	default:
 		break;
 	}
 }
+
