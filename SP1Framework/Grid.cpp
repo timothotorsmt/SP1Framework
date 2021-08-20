@@ -118,6 +118,11 @@ void Grid::setRoomPos(std::string s)
 	room_pos = s;
 }
 
+void Grid::set_lights(bool b)
+{
+	lights = b;
+}
+
 void Grid::importGrid(std::string file_name)
 {
 	std::ifstream readfile(file_name);
