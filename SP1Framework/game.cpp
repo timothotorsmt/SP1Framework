@@ -389,6 +389,9 @@ void renderSplashScreen()  // renders the splash screen
     c.Y += 1;
     c.X = g_Console.getConsoleSize().X / 2 - 9;
     g_Console.writeToBuffer(c, "Press 'Esc' to quit", 0x09);
+    c.Y += 1;
+    c.X = g_Console.getConsoleSize().X / 2 - 11;
+    g_Console.write to buffer(c, "Press ENTER to start", 0x09);
 }
 
 void renderGame()
