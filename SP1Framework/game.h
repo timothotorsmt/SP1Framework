@@ -32,7 +32,34 @@ enum EKEYS
     K_RIGHT,
     K_ESCAPE,
     K_SPACE,
-    K_COUNT
+    K_A,
+    K_B,
+    K_C,
+    K_D,
+    K_E,
+    K_F,
+    K_G,
+    K_H,
+    K_I,
+    K_J,
+    K_K,
+    K_L,
+    K_M,
+    K_N,
+    K_O,
+    K_P,
+    K_Q,
+    K_R,
+    K_S,
+    K_T,
+    K_U,
+    K_V,
+    K_W,
+    K_X,
+    K_Y,
+    K_Z,
+    K_BACKSPACE,
+    K_COUNT,
 };
 
 // Enumeration for the different screen states
@@ -43,6 +70,10 @@ enum EGAMESTATES
     S_TIMESUP,
     S_WIN,
     S_FAIL,
+    S_PAUSE,
+    S_LEADERBOARD,
+    S_KEYINNAME,
+    S_ANIMATION,
     S_COUNT
 };
 
@@ -75,6 +106,13 @@ void renderLocationMap(int x, int y);
 void rendertimesup();
 void renderWinScreen();
 void renderLoseScreen();
+void renderLeaderboard();
+void renderPauseScreen();
+void renderInputPlayerID();
+void keyInName();
+void leaderboardUpdate();
+void animationInteraction();
+void renderPreGameAnimation();
 
 // keyboard and mouse input event managers
 void keyboardHandler(const KEY_EVENT_RECORD& keyboardEvent);  // define this function for the console to call when there are keyboard events
