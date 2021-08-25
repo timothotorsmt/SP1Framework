@@ -1,12 +1,12 @@
 #include "Grid.h"
 #include "Colours.h"
 
+//done by timothy
 //construct grid
 Grid::Grid() : room_pos("--"), name("")
 {
 	for (int j = 0; j < 15; j++) {
 		for (int i = 0; i < 35; i++) {
-			//set tile position
 			gridMap[j][i].get_tile_pos().setCoordinates(j, i, true);
 			gridMap[j][i].set_tile_char('#');
 			gridMap[j][i].set_tile_color();
@@ -118,11 +118,6 @@ void Grid::setRoomPos(std::string s)
 	room_pos = s;
 }
 
-void Grid::set_lights(bool b)
-{
-	lights = b;
-}
-
 void Grid::importGrid(std::string file_name)
 {
 	std::ifstream readfile(file_name);
@@ -131,9 +126,13 @@ void Grid::importGrid(std::string file_name)
 		for (int j = 0; j < 21; j++) {
 			char c;
 			readfile >> c;
+			if (c == 'M') {
+				//add money as a variable entity 
+			}
 			gridMap[2 + i][7 + j].set_tile_char(c);
 			gridMap[2 + i][7 + j].set_tile_color();
 		}
 	}
+
 	readfile.close();
 }
