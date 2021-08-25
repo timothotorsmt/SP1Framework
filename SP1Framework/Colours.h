@@ -1,4 +1,5 @@
 #pragma once
+//done by timothy
 enum COLOURS
 {
 	//pure
@@ -20,6 +21,7 @@ enum COLOURS
 	WHITE = 0xFF,
 
 	//combination (??)
+	BLACKDARKGREY = 0x08
 
 	//0x0 = BLACK, 0x1 = DARK_BLUE, 0x2 = DARK GREEN, 0x3 = DARK AQUA, 0x4 = DARK RED, 0x5 = DARK PURPLE, 0x6 = DARK GOLD, 0x7 = GREY, 0x8 = DARKGREY, 0x9 = BLUE
 	//0xA = GREEN, 0xB = AQUA , 0xC = RED , 0xD = PURPLE , 0xE = YELLOW , 0xF = WHITE
