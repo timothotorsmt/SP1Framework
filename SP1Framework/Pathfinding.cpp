@@ -16,15 +16,10 @@ Pathfinding::~Pathfinding()
 
 void Pathfinding::drawGrid(std::string map_name)
 {
-	// change node array to be [15][35], and import grid from 
-	// [2][7] to [2][27]
-	// [12][7] to [12][27]
-	// border surrounding grid hard code to be walls to prevent enemy from going out of grid
-	// leave enemy and player coordinates to be the same as before
-		
 	// 2D array of nodes
 	nodes = new sNode[cols * rows];
 
+	
 	ifstream readfile(map_name);
 	getline(readfile, locationName);
 
@@ -41,8 +36,8 @@ void Pathfinding::drawGrid(std::string map_name)
 			{
 				char c;
 				readfile >> c;
-			}
-				/*if (c == '#')
+			
+				if (c == '#')
 				{
 					nodes[YDIM * cols + XDIM].isWall = true;
 				}
@@ -50,168 +45,9 @@ void Pathfinding::drawGrid(std::string map_name)
 			else
 			{
 				nodes[YDIM * cols + XDIM].isWall = true;
-			}*/
+			}
 			
 		}
-	}
-
-	// hardcode wall collision
-	for (int idx = 0; idx < 77; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[78].isWall = true;
-	nodes[83].isWall = true;
-	nodes[89].isWall = true;
-	nodes[90].isWall = true;
-
-	for (int idx = 98; idx < 112; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[113].isWall = true;
-	nodes[114].isWall = true;
-	nodes[115].isWall = true;
-	nodes[116].isWall = true;
-	nodes[118].isWall = true;
-	nodes[120].isWall = true;
-	nodes[121].isWall = true;
-	nodes[123].isWall = true;
-	nodes[124].isWall = true;
-	nodes[125].isWall = true;
-	nodes[127].isWall = true;
-	nodes[128].isWall = true;
-	nodes[130].isWall = true;
-	nodes[131].isWall = true;
-	nodes[132].isWall = true;
-
-	for (int idx = 133; idx < 147; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[148].isWall = true;
-	nodes[149].isWall = true;
-	nodes[151].isWall = true;
-	nodes[155].isWall = true;
-	nodes[156].isWall = true;
-	nodes[158].isWall = true;
-	nodes[163].isWall = true;
-	nodes[165].isWall = true;
-	nodes[166].isWall = true;
-
-	for (int idx = 168; idx < 182; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[188].isWall = true;
-	nodes[191].isWall = true;
-	nodes[195].isWall = true;
-	nodes[196].isWall = true;
-	nodes[198].isWall = true;
-	nodes[201].isWall = true;
-
-	for (int idx = 203; idx < 217; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[218].isWall = true;
-	nodes[219].isWall = true;
-	nodes[221].isWall = true;
-	nodes[222].isWall = true;
-	nodes[223].isWall = true;
-	nodes[224].isWall = true;
-	nodes[226].isWall = true;
-	nodes[228].isWall = true;
-	nodes[229].isWall = true;
-	nodes[230].isWall = true;
-	nodes[231].isWall = true;
-	nodes[235].isWall = true;
-	nodes[236].isWall = true;
-
-	// middle line
-	for (int idx = 238; idx < 252; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[254].isWall = true;
-	nodes[256].isWall = true;
-	nodes[268].isWall = true;
-	nodes[270].isWall = true;
-
-	for (int idx = 273; idx < 287; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[288].isWall = true;
-	nodes[289].isWall = true;
-	nodes[293].isWall = true;
-	nodes[294].isWall = true;
-	nodes[295].isWall = true;
-	nodes[296].isWall = true;
-	nodes[298].isWall = true;
-	nodes[300].isWall = true;
-	nodes[301].isWall = true;
-	nodes[302].isWall = true;
-	nodes[303].isWall = true;
-	nodes[305].isWall = true;
-	nodes[306].isWall = true;
-
-	for (int idx = 308; idx < 322; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[323].isWall = true;
-	nodes[326].isWall = true;
-	nodes[328].isWall = true;
-	nodes[329].isWall = true;
-	nodes[333].isWall = true;
-	nodes[336].isWall = true;
-
-	for (int idx = 343; idx < 357; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[358].isWall = true;
-	nodes[359].isWall = true;
-	nodes[361].isWall = true;
-	nodes[366].isWall = true;
-	nodes[368].isWall = true;
-	nodes[369].isWall = true;
-	nodes[373].isWall = true;
-	nodes[375].isWall = true;
-	nodes[376].isWall = true;
-
-	for (int idx = 378; idx < 392; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[392].isWall = true;
-	nodes[393].isWall = true;
-	nodes[394].isWall = true;
-	nodes[396].isWall = true;
-	nodes[397].isWall = true;
-	nodes[399].isWall = true;
-	nodes[400].isWall = true;
-	nodes[401].isWall = true;
-	nodes[403].isWall = true;
-	nodes[404].isWall = true;
-	nodes[406].isWall = true;
-	nodes[408].isWall = true;
-	nodes[410].isWall = true;
-	nodes[411].isWall = true;
-	nodes[412].isWall = true;
-
-	for (int idx = 413; idx < 427; idx++)
-	{
-		nodes[idx].isWall = true;
-	}
-	nodes[434].isWall = true;
-	nodes[435].isWall = true;
-	nodes[441].isWall = true;
-
-	for (int idx = 448; idx < 525; idx++)
-	{
-		nodes[idx].isWall = true;
 	}
 
 	// connect nodes together
@@ -365,5 +201,5 @@ int Pathfinding::solve_AStar(void)
 		}
 		return moveDirection;
 	}
-	
+	return 0;
 }
