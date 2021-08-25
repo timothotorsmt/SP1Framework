@@ -6,7 +6,7 @@
 class Enemy : public GameObject
 {
 private:
-	static bool isEnemyCreate;
+	static int numOfEnemies;
 	int enemyPosX{};
 	int enemyPosY{};
 	int roomPosX{};
@@ -17,12 +17,11 @@ public:
 	Enemy(int enemyPosX, int enemyPosY, int roomPosX, int roomPosY);
 	virtual ~Enemy();
 
-	void Interact(GameObject* obj);
 	bool isCollided(GameObject* obj);
+	void Interact(GameObject* obj);
 	bool checkForCollision(Grid map, int direction);
 	void MoveObject(int x, int y);
 
 	int getEnemyPosX(void);
 	int getEnemyPosY(void);
 };
-
