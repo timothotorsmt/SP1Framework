@@ -47,4 +47,3 @@ public:
 	
 	int solve_AStar(void);
 };
-
