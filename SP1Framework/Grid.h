@@ -4,14 +4,16 @@
 #include <fstream>
 #include <bitset>
 #include "Tile.h"
+
+//done by timothy
 class Grid
 {
 private:
 	Tile gridMap[15][35];
-	//set which doors are open and which are closed
 	std::bitset<4> doorConfig;
 	std::string name;
 	std::string room_pos;
+
 public:
 	Grid();
 	~Grid();
@@ -27,7 +29,6 @@ public:
 	void setDoorConfig(int i);
 	void setDoorConfig();
 	void setRoomPos(std::string s);
-	void set_lights(bool b);
 
 	//others
 	void importGrid(std::string fileName);
