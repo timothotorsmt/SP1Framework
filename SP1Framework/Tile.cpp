@@ -5,7 +5,7 @@ Tile::Tile()
 {
 	tileCharacter = ' ';
 	tilePos.setCoordinates(0, 0, true);
-	canBeSeen = false;
+	canBeSeen = true;
 	tile_color = 0xff;
 }
 
@@ -38,11 +38,6 @@ WORD Tile::get_tile_color()
 	return tile_color;
 }
 
-bool Tile::get_can_be_seen()
-{
-	return canBeSeen;
-}
-
 void Tile::set_tile_char(char c)
 {
 	tileCharacter = c;
@@ -63,13 +58,10 @@ void Tile::set_tile_color()
 	switch (tileCharacter)
 	{
 	case ('#'):
-		tile_color = COLOURS::BLACKDARKGREY;
+		tile_color = COLOURS::GREY;
 		break;
 	case ('.'):
 		tile_color = COLOURS::WHITE;
-		break;
-	case ('G'):
-		tile_color = COLOURS::BLUE;
 		break;
 	case ('M'):
 		tile_color = COLOURS::GREEN;
@@ -77,8 +69,10 @@ void Tile::set_tile_color()
 	case ('J'):
 		tile_color = COLOURS::DARKGOLD;
 		break;
+	case ('-'):
+		tile_color = COLOURS::BLUE;
+		break;
 	default:
 		break;
 	}
 }
-
