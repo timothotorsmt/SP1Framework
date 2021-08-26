@@ -1,7 +1,5 @@
 #pragma once
 
-//done by dennis wong
-//edited by timothy
 class Position
 {
 private:
@@ -22,4 +20,3 @@ public:
 	//others
 	bool isEqualPos(Position otherPos);
 };
-
