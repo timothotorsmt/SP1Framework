@@ -1116,7 +1116,7 @@ void renderGame()
     }
     if (Player::isPlayerAlive() == true && Player::isJewelCaptured() == true)
     {
-        if (myPlayer->getObjectPosition().getColumn() == 3 && myPlayer->getObjectPosition().getRow() == 3)
+        if (myPlayer->getRoomPos('x') == 3 && myPlayer->getRoomPos('y') == 3)
         {
             renderWinScreen();
         }
