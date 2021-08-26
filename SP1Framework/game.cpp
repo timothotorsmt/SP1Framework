@@ -830,6 +830,8 @@ void restartGameUpdate()
     switch (g_eGameState)
     {
     case S_TIMESUP:
+        despawnEnemy();
+        Player::setJewelCaptureStatus(false);
         if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
             init();
         }
@@ -839,6 +841,7 @@ void restartGameUpdate()
         break;
     case S_WIN:
         despawnEnemy();
+        Player::setJewelCaptureStatus(false);
         if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
             init();
         }
@@ -848,6 +851,7 @@ void restartGameUpdate()
         break;
     case S_FAIL:
         despawnEnemy();
+        Player::setJewelCaptureStatus(false);
         if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
             init();
         }
