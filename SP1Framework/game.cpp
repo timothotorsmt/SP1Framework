@@ -1169,6 +1169,29 @@ void renderWinScreen() {
         outputStr = winart[i];
         g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     }
+    c.Y += 3;
+    c.X = g_Console.getConsoleSize().X / 2 - 10;
+    outputStr = "Total points:   " + std::to_string(points);
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    c.Y++;
+    c.X = g_Console.getConsoleSize().X / 2 - 5;
+    g_Console.writeToBuffer(c, "MAIN MENU", BACKMATCHTEXT);
+    c.Y++;
+    g_Console.writeToBuffer(c, "ADD TO LEADERBOARD", BACKMATCHTEXT);
+    c.Y += 2;
+    c.X = g_Console.getConsoleSize().X / 2 - 8;
+    outputStr = "Continue?     " + std::to_string((int)(20 - g_pregameElapsedtime));
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    if (g_mouseEvent.mousePosition.Y == 15) {
+        c.X = g_Console.getConsoleSize().X / 2 - 7;
+        c.Y = 15;
+        g_Console.writeToBuffer(c, "> MAIN MENU", BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
+    }
+    if (g_mouseEvent.mousePosition.Y == 16) {
+        c.X = g_Console.getConsoleSize().X / 2 - 7;
+        c.Y = 16;
+        g_Console.writeToBuffer(c, "> ADD TO LEADERBOARD", BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
+    }
 }
 
 void renderLoseScreen() {
