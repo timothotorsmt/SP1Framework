@@ -1,30 +1,23 @@
 #include "Player.h"
 
-//done by dennis wong
-//edited by timothy
-
 bool Player::isPlayerCreate = false;
 int Player::PocketMoney = 0;
-bool Player::JewelCapture = false;
+bool Player::jewelCaptureStatus = false;
 
-//done by dennis wong
-//edited by jeremy
 Player::Player()
 {
 	isPlayerCreate = true;
 	entity_char = 'P';
-	objectPosition.setCoordinates(17, 7, true);
-	roomPosX = 3;
-	roomPosY = 3;
+	objectPosition.setCoordinates(17, 6, true);
+	roomPosX = 1;
+	roomPosY = 0;
 }
 
-//done by dennis wong
 Player::~Player()
 {
 	isPlayerCreate = false;
 }
 
-//done by dennis wong
 void Player::Interact(GameObject* obj)
 {
 	switch (obj->getEntityChar())
@@ -34,13 +27,11 @@ void Player::Interact(GameObject* obj)
 		break;
 
 	case 'J':
-		JewelCapture = true; // Player got the jewel
+		jewelCaptureStatus = true; // Player got the jewel
 		break;
 	}
 }
 
-//done by dennis wong
-//edited by jeremy
 bool Player::isCollided(GameObject* obj)
 {
 	if (objectPosition.isEqualPos(obj->getObjectPosition()))
@@ -49,18 +40,14 @@ bool Player::isCollided(GameObject* obj)
 		return false;
 }
 
-//done by dennis wong
-//edited by timothy
-//edited by jeremy
-bool Player::checkForCollision(GameObject* obj, int direction) 
+bool Player::checkForCollision(Grid map, int direction)
 {
 	switch (direction)
 	{
 	case 1: // UP
 		if (objectPosition.getRow() != 0) 
 		{
-			if (map.getTile(objectPosition.getColumn(), objectPosition.getRow() - 1).get_tile_char() == '#') 
-			{
+			if (map.getTile(objectPosition.getColumn(), objectPosition.getRow() - 1).get_tile_char() == '#') {
 				return true;
 			}
 		}
@@ -68,8 +55,7 @@ bool Player::checkForCollision(GameObject* obj, int direction)
 	case 2: // LEFT
 		if (objectPosition.getColumn() != 0) 
 		{
-			if (map.getTile(objectPosition.getColumn() - 1, objectPosition.getRow()).get_tile_char() == '#') 
-			{
+			if (map.getTile(objectPosition.getColumn() - 1, objectPosition.getRow()).get_tile_char() == '#') {
 				return true;
 			}
 		}
@@ -77,8 +63,7 @@ bool Player::checkForCollision(GameObject* obj, int direction)
 	case 3: // DOWN
 		if (objectPosition.getRow() != 14) 
 		{
-			if (map.getTile(objectPosition.getColumn(), objectPosition.getRow() + 1).get_tile_char() == '#') 
-			{
+			if (map.getTile(objectPosition.getColumn(), objectPosition.getRow() + 1).get_tile_char() == '#') {
 				return true;
 			}
 		}
@@ -86,8 +71,7 @@ bool Player::checkForCollision(GameObject* obj, int direction)
 	case 4: // RIGHT
 		if (objectPosition.getColumn() != 34) 
 		{
-			if (map.getTile(objectPosition.getColumn() + 1, objectPosition.getRow()).get_tile_char() == '#') 
-			{
+			if (map.getTile(objectPosition.getColumn() + 1, objectPosition.getRow()).get_tile_char() == '#') {
 				return true;
 			}
 		}
@@ -99,15 +83,11 @@ bool Player::checkForCollision(GameObject* obj, int direction)
 	return false;
 }
 
-//done by dennis wong
-//edited by jeremy
 void Player::MoveObject(int x, int y)
 {
 	objectPosition.setCoordinates(x, y, false);
 }
 
-//done by timothy
-//edited by jeremy
 int Player::checkIsOOB()
 {
 	if (objectPosition.getColumn() == 0) 
@@ -137,7 +117,6 @@ int Player::checkIsOOB()
 	else return 0;
 }
 
-//done by timothy
 void Player::shiftRoomPos(int i, char c)
 {
 	if (c == 'x') 
@@ -150,14 +129,17 @@ void Player::shiftRoomPos(int i, char c)
 	}
 }
 
-//done by timothy
 int Player::getRoomPos(char c)
 {
 	return (c == 'x') ? (roomPosX) : (roomPosY);
 }
 
-//done by dennis
-bool Player::CheckOnPlayer()
+void Player::setPlayerAliveStatus(bool playerAliveStatus)
+{
+	isPlayerCreate = playerAliveStatus;
+}
+
+bool Player::isPlayerAlive()
 {
 	return isPlayerCreate;
 }
@@ -167,7 +149,12 @@ int Player::CheckOnMoney()
 	return PocketMoney;
 }
 
-bool Player::CheckOnJewel()
+void Player::setJewelCaptureStatus(bool jewelStatus)
 {
-	return JewelCapture;
+	jewelCaptureStatus = jewelStatus;
+}
+
+bool Player::isJewelCaptured()
+{
+	return jewelCaptureStatus;
 }
