@@ -5,6 +5,7 @@
 
 extern CStopWatch g_swTimer;
 extern bool g_bQuitGame;
+extern bool restartGame;
 
 // struct to store keyboard events
 // a small subset of KEY_EVENT_RECORD
@@ -59,7 +60,7 @@ enum EKEYS
     K_Y,
     K_Z,
     K_BACKSPACE,
-    K_COUNT,
+    K_COUNT
 };
 
 // Enumeration for the different screen states
@@ -74,6 +75,8 @@ enum EGAMESTATES
     S_LEADERBOARD,
     S_KEYINNAME,
     S_ANIMATION,
+    S_MINIGAME1,
+    S_MINIGAME2,
     S_COUNT
 };
 
@@ -93,16 +96,27 @@ void splashScreenWait();    // waits for time to pass in splash screen
 void updateGame();          // gameplay logic
 void restartGameUpdate();
 void moveCharacter();       // moves the character, collision detection, physics, etc
+void spawnEnemy();
+void despawnEnemy();
+void pathfinding();
+bool enemyPlayerCollision();
+int enemyEnemyCollision(int moveDirection);
+void despawnTestEnemies();
+void spawnJewel();
+void despawnJewel();
+bool playerJewelCollision();
+
 void processUserInput();    // checks if you should change states or do something else with the game, e.g. pause, exit
 void clearScreen();         // clears the current screen and draw from scratch 
 void renderSplashScreen();  // renders the splash screen
 void renderGame();          // renders the game stuff
 void renderMap();           // renders the map to the buffer first
 void renderCharacter();     // renders the character into the buffer
+void renderEnemies();
 void renderFramerate();     // renders debug information, frame rate, elapsed time, etc
-void renderToScreen();      // dump the contents of the buffer to the screen, one frame worth of game
+void renderToScreen();      // dump the contents of the buffer to the screen, one frame worth of game        
 void renderUI();
-void renderLocationMap(int x, int y);
+void pauseUpdate();
 void rendertimesup();
 void renderWinScreen();
 void renderLoseScreen();
@@ -113,6 +127,10 @@ void keyInName();
 void leaderboardUpdate();
 void animationInteraction();
 void renderPreGameAnimation();
+void renderMinigame1();
+void updateMinigame1();
+//void renderMinigame2();
+//void updateMinigame2();
 
 // keyboard and mouse input event managers
 void keyboardHandler(const KEY_EVENT_RECORD& keyboardEvent);  // define this function for the console to call when there are keyboard events
