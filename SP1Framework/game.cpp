@@ -1114,13 +1114,13 @@ void renderGame()
     {
         renderLoseScreen();
     }
-    /*if (Player::isPlayerAlive() == true && Player::isJewelCaptured() == true)
+    if (Player::isPlayerAlive() == true && Player::isJewelCaptured() == true)
     {
         if (myPlayer->getObjectPosition().getColumn() == 3 && myPlayer->getObjectPosition().getRow() == 3)
         {
             renderWinScreen();
         }
-    }*/
+    }
 }
 
 void rendertimesup()
