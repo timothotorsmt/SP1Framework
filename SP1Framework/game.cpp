@@ -5,15 +5,21 @@
 #include "Grid.h"
 #include "Map.h"
 #include "Framework\console.h"
+#include "readASCIItext.h"
 #include "keys.h"
 #include "Colours.h"
+#include "Enemy.h"
+#include "Pathfinding.h"
 #include "Leaderboard.h"
 #include "Player.h"
+#include "Collectible.h"
 #include "Money.h"
+#include "minigame1.h"
 #include "GameObject.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <vector>
 #define BACKMATCHTEXT (BACKGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
 #define WHITETEXT (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
@@ -28,24 +34,40 @@ SMouseEvent g_mouseEvent;
 Map level_map;
 Grid test_grid;
 Player* myPlayer;
-int points;
+Pathfinding* pathfinder;
+Enemy* enemies[4] = { nullptr, nullptr, nullptr, nullptr };
+Enemy* testEnemies[4] = { nullptr, nullptr, nullptr, nullptr };
+Collectible* jewel = nullptr;
 Money* moneyArr[3];
 int totalItem;
+
+//WIP
+//Leaderboard leaderboard;
+
 SGameChar   g_sChar;
-EGAMESTATES g_eGameState; // initial state
+EGAMESTATES g_eGameState = S_SPLASHSCREEN; // initial state
+double g_dEnemyTimer;
+bool canEnemyMove;
+bool isLightsOn;
 unsigned int scrollNum;
 std::string playerId;
+int points;
+bool hasPlayedMinigame;
+minigame1* minigamedennis;
 
 // Console object
 Console g_Console(100, 22, "SP1Grp5_Timothy_Jeremy_Dennis_Aloysius");
 
 //ascii art goes here
-std::vector<std::string> titleart = readfile("title.txt");
-std::vector<std::string> timesupart = readfile("time'sup.txt");
-std::vector<std::string> pausescreenart = readfile("paused.txt");
+std::vector <std::string> titleart = readfile("title.txt");
+std::vector <std::string> timesupart = readfile("time'sup.txt");
+std::vector <std::string> pausescreenart = readfile("paused.txt");
 std::vector <std::string> newsopen = readfile("news.txt");
 std::vector <std::string> newsclosed = readfile("newsclosed.txt");
-std::vector<std::string> leaderboardart = readfile("leaderboardart.txt");
+std::vector <std::string> leaderboardart = readfile("leaderboardart.txt");
+std::vector <std::string> winart = readfile("win.txt");
+std::vector <std::string> loseart = readfile("failure.txt");
+
 
 //--------------------------------------------------------------
 // Purpose  : Initialisation function
@@ -57,24 +79,32 @@ std::vector<std::string> leaderboardart = readfile("leaderboardart.txt");
 void init( void )
 {
     // Set precision for floating point output
-    g_dElapsedTime = 0.0; 
+    g_dElapsedTime = 0.0;
     g_pregameElapsedtime = 0.0;
+    g_dEnemyTimer = 0.0;
     points = 0;
 
     // sets the initial state for the game
+    myPlayer = new Player;
     g_eGameState = S_SPLASHSCREEN;
+    playerId = "";
+    
+    level_map.generateNewMap();
+    hasPlayedMinigame = false;
+    minigamedennis = new minigame1;
+    minigamedennis->generatenewnums();
 
-    g_sChar.m_cLocation.X = g_Console.getConsoleSize().X / 2;
-    g_sChar.m_cLocation.Y = g_Console.getConsoleSize().Y / 2;
+    canEnemyMove = false;
+    isLightsOn = true;
+    
+    g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+    g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
     // sets the width, height and the font name to use in the console
     g_Console.setConsoleFont(0, 16, L"Consolas");
 
     // remember to set your keyboard handler, so that your functions can be notified of input events
     g_Console.setKeyboardHandler(keyboardHandler);
     g_Console.setMouseHandler(mouseHandler);
-
-    // Implemented by denniswong10 (Create player)
-    myPlayer = new Player;
 
     totalItem = Money::GetMoneyCount();
 }
@@ -90,10 +120,15 @@ void shutdown( void )
 {
     // Reset to white text on black background
     colour(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED);
+
+    //delete variables
+    if (Player::isPlayerAlive() == true)
+    {
+        delete myPlayer;
+    }
     
-    delete myPlayer;
-    
-    //delete variables ?? any??
+    delete minigamedennis;
+
     g_Console.clearBuffer();
 }
 
@@ -171,6 +206,10 @@ void mouseHandler(const MOUSE_EVENT_RECORD& mouseEvent)
         break;
     case S_GAME: gameplayMouseHandler(mouseEvent); // handle gameplay mouse event
         break;
+    case S_MINIGAME1: gameplayMouseHandler(mouseEvent);
+        break;
+    default: gameplayMouseHandler(mouseEvent);
+        break;
     }
 }
 
@@ -191,10 +230,10 @@ void gameplayKBHandler(const KEY_EVENT_RECORD& keyboardEvent)
     {
     case VK_UP: key = K_UP; break;
     case VK_DOWN: key = K_DOWN; break;
-    case VK_LEFT: key = K_LEFT; break; 
-    case VK_RIGHT: key = K_RIGHT; break; 
+    case VK_LEFT: key = K_LEFT; break;
+    case VK_RIGHT: key = K_RIGHT; break;
     case VK_SPACE: key = K_SPACE; break;
-    case VK_ESCAPE: key = K_ESCAPE; break; 
+    case VK_ESCAPE: key = K_ESCAPE; break;
     case VK_KEY_A: key = K_A; break;
     case VK_KEY_B: key = K_B; break;
     case VK_KEY_C: key = K_C; break;
@@ -231,7 +270,7 @@ void gameplayKBHandler(const KEY_EVENT_RECORD& keyboardEvent)
     {
         g_skKeyEvent[key].keyDown = keyboardEvent.bKeyDown;
         g_skKeyEvent[key].keyReleased = !keyboardEvent.bKeyDown;
-    }    
+    }
 }
 
 //--------------------------------------------------------------
@@ -269,18 +308,30 @@ void gameplayMouseHandler(const MOUSE_EVENT_RECORD& mouseEvent)
 //--------------------------------------------------------------
 void update(double dt)
 {
-    // get the delta time
-    g_dElapsedTime += dt;
+    //get the delta time
     g_dDeltaTime = dt;
 
     switch (g_eGameState)
     {
         case S_SPLASHSCREEN : 
             splashScreenWait(); // game logic for the splash screen
+            g_pregameElapsedtime += dt;
             break;
         case S_GAME: 
             updateGame(); // gameplay logic when we are in the game
             g_dElapsedTime += dt;
+            
+            g_dEnemyTimer += dt;
+            if (g_dEnemyTimer > 0 && g_dEnemyTimer < 0.25)
+            {
+                canEnemyMove = false;
+            }
+            else if (g_dEnemyTimer >= 0.25)
+            {
+                canEnemyMove = true;
+                g_dEnemyTimer = 0;
+            }
+
             break;
         case S_PAUSE:
             pauseUpdate();
@@ -295,6 +346,10 @@ void update(double dt)
         case S_LEADERBOARD:
             leaderboardUpdate();
             break;
+        case S_MINIGAME1:
+            g_dEnemyTimer += dt;
+            updateMinigame1();
+            break;
         default:
             restartGameUpdate();
             g_pregameElapsedtime += dt;
@@ -302,9 +357,10 @@ void update(double dt)
     }
 }
 
-void splashScreenWait()    // waits for time to pass in splash screen
+// waits for time to pass in splash screen
+void splashScreenWait()
 {
-     if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 16) {
+    if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 16) {
         g_eGameState = S_ANIMATION;
         g_pregameElapsedtime = 0;
     }
@@ -317,10 +373,456 @@ void splashScreenWait()    // waits for time to pass in splash screen
     }
 }
 
-void updateGame()       // gameplay logic
+void spawnEnemy()
 {
-    processUserInput(); // Waiting to be Implemented (From denniswong10)
-    if (Player::CheckOnPlayer()) { moveCharacter(); } // Implemented by denniswong10 (Update MoveCharacter)
+    // checks if player is in start/end room
+    if ((myPlayer->getRoomPos('x') != 3) || (myPlayer->getRoomPos('y') != 3))
+    {
+        // checks if player is in jewel room
+        if ((myPlayer->getRoomPos('x') != 0) || (myPlayer->getRoomPos('y') != 0))
+        {
+            // spawns 2 enemies if jewel not captured
+            if (Player::isJewelCaptured() == false)
+            {
+                enemies[0] = new Enemy(17, 5, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+                enemies[1] = new Enemy(37, 15, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+            }
+            // spawns 4 enemies if jewel captured
+            else
+            {
+                enemies[0] = new Enemy(17, 5, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+                enemies[1] = new Enemy(37, 5, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+                enemies[2] = new Enemy(17, 15, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+                enemies[3] = new Enemy(37, 15, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+            }
+        }
+    }
+}
+
+void despawnEnemy()
+{
+    // checks if enemies exist
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (enemies[i] != nullptr)
+        {
+            delete[] enemies[i];
+            enemies[i] = nullptr;
+        }
+    }
+}
+
+void pathfinding()
+{
+    // identify the location
+    std::string map_name = level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getName();
+    map_name += ".txt";
+
+    // draws the pathfinding nodes onto the location
+    pathfinder = new Pathfinding;
+    pathfinder->drawGrid(map_name);
+
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (enemies[i] != nullptr)
+        {
+            // determines source (enemy) and target (player) nodes
+            int playerCol, playerRow, enemyCol, enemyRow;
+            playerCol = myPlayer->getObjectPosition().getColumn();
+            playerRow = myPlayer->getObjectPosition().getRow();
+            enemyCol = enemies[i]->getObjectPosition().getColumn() - 10;
+            enemyRow = enemies[i]->getObjectPosition().getRow() - 3;
+
+            // checks if player has entered the maze
+            if (((playerCol >= 7) && (playerCol <= 27)) && ((playerRow >= 2) && (playerRow <= 12)))
+            {
+                pathfinder->chooseStartEndNodes(playerCol, playerRow, enemyCol, enemyRow);
+
+                // calculates the direction the enemy needs to move
+                int moveDirection = pathfinder->solve_AStar();
+
+                moveDirection = enemyEnemyCollision(moveDirection);
+
+                switch (moveDirection)
+                {
+                case 1: // UP
+                    enemies[i]->MoveObject(0, -1);
+                    break;
+                case 2: // LEFT
+                    enemies[i]->MoveObject(-1, 0);
+                    break;
+                case 3: // DOWN
+                    enemies[i]->MoveObject(0, 1);
+                    break;
+                case 4: // RIGHT
+                    enemies[i]->MoveObject(1, 0);
+                    break;
+                default: // STOP
+                    break;
+                }
+            }
+        }
+    }
+}
+
+bool enemyPlayerCollision()
+{
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (enemies[i] != nullptr)
+        {
+            if (myPlayer->getObjectPosition().getColumn() == enemies[i]->getObjectPosition().getColumn() - 10)
+            {
+                if (myPlayer->getObjectPosition().getRow() == enemies[i]->getObjectPosition().getRow() - 3)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+int enemyEnemyCollision(int moveDirection)
+{
+    int enemyMoveDirection = moveDirection;
+
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (enemies[i] != nullptr)
+        {   
+            // initialises test enemy with enemy values
+            testEnemies[i] = new Enemy;
+            testEnemies[i]->MoveObject(enemies[i]->getEnemyPosX(), enemies[i]->getEnemyPosY());
+            
+            switch (enemyMoveDirection)
+            {
+            case 1: // UP
+                testEnemies[i]->MoveObject(0, -1);
+                break;
+            case 2: // LEFT
+                testEnemies[i]->MoveObject(-1, 0);
+                break;
+            case 3: // DOWN
+                testEnemies[i]->MoveObject(0, 1);
+                break;
+            case 4: // RIGHT
+                testEnemies[i]->MoveObject(1, 0);
+                break;
+            default: // STOP
+                break;
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (testEnemies[i] != nullptr)
+        {
+            for (unsigned int j = 0; j < std::size(enemies); j++)
+            {
+                if (j != i)
+                {
+                    if (enemies[j] != nullptr)
+                    {
+                        if ((testEnemies[i]->getEnemyPosX() == testEnemies[j]->getEnemyPosX()) && (testEnemies[i]->getEnemyPosY() == testEnemies[j]->getEnemyPosY()))
+                        {
+                            // forces the enemies to move in opposite directions
+                            switch (enemyMoveDirection)
+                            {
+                            case 1: // UP
+                                enemyMoveDirection = 3;
+                                break;
+                            case 2: // LEFT
+                                enemyMoveDirection = 4;
+                                break;
+                            case 3: // DOWN
+                                enemyMoveDirection = 1;
+                                break;
+                            case 4: // RIGHT
+                                enemyMoveDirection = 2;
+                                break;
+                            default: // STOP
+                                break;
+                            }
+                        }
+                        if ((testEnemies[i]->getEnemyPosX() == enemies[j]->getEnemyPosX()) && (testEnemies[i]->getEnemyPosY() == enemies[j]->getEnemyPosY()))
+                        {
+                            // forces the enemies to move in opposite directions
+                            switch (enemyMoveDirection)
+                            {
+                            case 1: // UP
+                                enemyMoveDirection = 3;
+                                break;
+                            case 2: // LEFT
+                                enemyMoveDirection = 4;
+                                break;
+                            case 3: // DOWN
+                                enemyMoveDirection = 1;
+                                break;
+                            case 4: // RIGHT
+                                enemyMoveDirection = 2;
+                                break;
+                            default: // STOP
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return enemyMoveDirection;
+}
+
+void despawnTestEnemies()
+{
+    for (unsigned int i = 0; i < std::size(testEnemies); i++)
+    {
+        if (testEnemies[i] != nullptr)
+        {
+            delete[] testEnemies[i];
+            testEnemies[i] = nullptr;
+        }   
+    }
+}
+
+// checks if player is in the jewel room
+void spawnJewel()
+{
+    if (myPlayer->getRoomPos('x') == 0 && myPlayer->getRoomPos('y') == 0)
+    {
+        if (jewel == nullptr)
+        {
+            jewel = new Collectible(27, 10, myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'), 'J');
+        }
+    }
+}
+
+void despawnJewel()
+{
+    if (jewel != nullptr)
+    {
+        delete jewel;
+        jewel = nullptr;
+    }
+}
+
+bool playerJewelCollision()
+{
+    if (jewel != nullptr)
+    {
+        if ((myPlayer->getObjectPosition().getColumn() == jewel->getObjectPosition().getColumn() - 10) && (myPlayer->getObjectPosition().getRow() == jewel->getObjectPosition().getRow() - 3))
+        {
+            Player::setJewelCaptureStatus(true);
+            despawnJewel();
+        }
+    }
+    return Player::isJewelCaptured();
+}
+
+void moveCharacter()
+{
+    // Define threat
+    int direction = 0;
+    int index = 0;
+
+    // Input key movement
+    if (g_skKeyEvent[K_W].keyReleased) direction = 1;
+    if (g_skKeyEvent[K_A].keyReleased) direction = 2;
+    if (g_skKeyEvent[K_S].keyReleased) direction = 3;
+    if (g_skKeyEvent[K_D].keyReleased) direction = 4;
+
+    // Player still survive. If not skip this
+    if (myPlayer != nullptr && direction != 0)
+    {
+        // Player Direction (Collision is false then move)
+        if (myPlayer->checkForCollision(level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')), direction) == false)
+        {
+            switch (direction)
+            {
+            case 1: // UP
+                if ((myPlayer->getObjectPosition().getRow() - 1) > -1) myPlayer->MoveObject(0, -1);
+                break;
+
+            case 2: // LEFT
+                if ((myPlayer->getObjectPosition().getColumn() - 1) > -1) myPlayer->MoveObject(-1, 0);
+                break;
+
+            case 3: // DOWN
+                if ((myPlayer->getObjectPosition().getRow() + 1) < 15) myPlayer->MoveObject(0, 1);
+                break;
+
+            case 4: // RIGHT
+                if ((myPlayer->getObjectPosition().getColumn() + 1) < 35) myPlayer->MoveObject(1, 0);
+                break;
+
+            default: // STOP
+                break;
+            }
+        }
+        else {
+            g_Console.writeToBuffer(0, 0, "Invalid movement");
+        }
+
+        // Item Collector from Player (Money, Jewel)
+        index = 0;
+        direction = 0;
+
+        for (int i = 0; i < totalItem; i++)
+        {
+            if (moneyArr[i] != nullptr && myPlayer->isCollided(moneyArr[i]))
+            {
+                myPlayer->Interact(moneyArr[i]);
+                moneyArr[i]->Interact(myPlayer);
+                break;
+            }
+        }
+        if (myPlayer->getObjectPosition().getColumn() == 17 && myPlayer->getObjectPosition().getRow() == 9 && myPlayer->getRoomPos('x') == 0 && myPlayer->getRoomPos('y') == 0) {
+            if (hasPlayedMinigame == false) {
+                hasPlayedMinigame = true;
+                g_eGameState = S_MINIGAME1;
+            }
+        }
+
+        switch (myPlayer->checkIsOOB())
+        {
+        case 1:
+            g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+            g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
+            despawnTestEnemies();
+            despawnEnemy();
+            despawnJewel();
+            spawnEnemy();
+            if (Player::isJewelCaptured() == false)
+            {
+                spawnJewel();
+            }
+            return;
+            break;
+        case 2:
+            g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+            g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
+            despawnTestEnemies();
+            despawnEnemy();
+            despawnJewel();
+            spawnEnemy();
+            if (Player::isJewelCaptured() == false)
+            {
+                spawnJewel();
+            }
+            return;
+            break;
+        case 3:
+            g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+            g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
+            despawnTestEnemies();
+            despawnEnemy();
+            despawnJewel();
+            spawnEnemy();
+            if (Player::isJewelCaptured() == false)
+            {
+                spawnJewel();
+            }
+            return;
+            break;
+        case 4:
+            g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+            g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
+            despawnTestEnemies();
+            despawnEnemy();
+            despawnJewel();
+            spawnEnemy();
+            if (Player::isJewelCaptured() == false)
+            {
+                spawnJewel();
+            }
+            return;
+            break;
+        default:
+            // Player Movement (Only update player position and reset direction)
+            g_sChar.m_cLocation.X = myPlayer->getObjectPosition().getColumn() + 10;
+            g_sChar.m_cLocation.Y = myPlayer->getObjectPosition().getRow() + 3;
+            return;
+            break;
+        }
+    }
+}
+
+void processUserInput()
+{
+    // quits the game if player hits the escape key
+    if (g_skKeyEvent[K_ESCAPE].keyReleased)
+        g_eGameState = S_PAUSE;
+    if (g_mouseEvent.mousePosition.Y == 2 && (g_mouseEvent.mousePosition.X > 91 && g_mouseEvent.mousePosition.X < 99) && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+        g_eGameState = S_PAUSE;
+    }
+    if (g_skKeyEvent[K_T].keyReleased && g_skKeyEvent[K_U].keyReleased) {
+        g_pregameElapsedtime = 0.0;
+        g_eGameState = S_TIMESUP;
+    }
+    if (g_skKeyEvent[K_L].keyReleased && g_skKeyEvent[K_P].keyReleased) {
+        myPlayer->shiftRoomPos(-3, 'x');
+        myPlayer->shiftRoomPos(-3, 'y');
+    }
+    if (g_skKeyEvent[K_M].keyReleased && g_skKeyEvent[K_L].keyReleased) {
+        minigamedennis->generatenewnums();
+        g_eGameState = S_MINIGAME1;
+    }
+}
+
+//gameplay logic
+void updateGame()
+{
+    processUserInput();
+    if (Player::isPlayerAlive() == true)
+    {
+        moveCharacter();
+
+        // checks if player is in the start/end room
+        if ((myPlayer->getRoomPos('x') != 3) || (myPlayer->getRoomPos('y') != 3))
+        {
+            // checks if player is in the jewel room
+            if ((myPlayer->getRoomPos('x') != 0) || (myPlayer->getRoomPos('y') != 0))
+            {
+                // checks if player has entered the maze
+                if ((myPlayer->getObjectPosition().getColumn() >= 7) && (myPlayer->getObjectPosition().getColumn() <= 27))
+                {
+                    if ((myPlayer->getObjectPosition().getRow() >= 2) && (myPlayer->getObjectPosition().getRow() <= 12))
+                    {
+                        // only runs if lights are on
+                        if (isLightsOn == true)
+                        {
+                            // only runs enemy pathfinding at an interval
+                            if (canEnemyMove == true)
+                            {
+                                pathfinding();
+                                canEnemyMove = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // checks if player still alive
+        if (enemyPlayerCollision() == true)
+        {
+            delete myPlayer;
+            Player::setPlayerAliveStatus(false);
+        }
+
+        // if player is in the jewel room, check if player collide with jewel
+        if (myPlayer->getRoomPos('x') == 0 && myPlayer->getRoomPos('y') == 0)
+        {
+            playerJewelCollision();
+        }
+    }
+}
+
+void leaderboardUpdate() {
+    if (g_mouseEvent.mousePosition.Y == 18 && g_mouseEvent.mousePosition.X < 17 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+        g_eGameState = S_SPLASHSCREEN;
+    }
 }
 
 void restartGameUpdate()
@@ -336,12 +838,23 @@ void restartGameUpdate()
         }
         break;
     case S_WIN:
+        despawnEnemy();
+        if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
+            init();
+        }
+        else if (g_mouseEvent.mousePosition.Y == 16 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+            g_eGameState = S_KEYINNAME;
+        }
         break;
     case S_FAIL:
+        despawnEnemy();
+        if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
+            init();
+        }
+        else if (g_mouseEvent.mousePosition.Y == 16 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+            g_eGameState = S_KEYINNAME;
+        }
         break;
-    }
-    if (g_pregameElapsedtime > 20.0) {
-        g_bQuitGame = true;
     }
     if (g_pregameElapsedtime > 20.0) {
         g_bQuitGame = true;
@@ -356,108 +869,9 @@ void pauseUpdate()
     else if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 15) {
         g_bQuitGame = true;
     }
-    else if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 14 && g_mouseEvent.mousePosition.X > 40 && g_mouseEvent.mousePosition.X < 50 ) {
+    else if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED && g_mouseEvent.mousePosition.Y == 14 && g_mouseEvent.mousePosition.X > 40 && g_mouseEvent.mousePosition.X < 50) {
         init();
     }
-}
-
-// Modified by denniswong10 (I don't like how the default one operator it. So i mod it)
-void moveCharacter()
-{    
-    // Define threat
-    int direction = 0;
-    int index = 0;
-
-    // Input key movement
-    if (g_skKeyEvent[K_UP].keyDown) direction = 1;
-    if (g_skKeyEvent[K_LEFT].keyDown) direction = 2;
-    if (g_skKeyEvent[K_DOWN].keyDown) direction = 3;
-    if (g_skKeyEvent[K_RIGHT].keyDown) direction = 4;
-
-    // Player still survive. If not skip this
-    if (Player::CheckOnPlayer())
-    {
-        // Pillar Checker: Collision is true 
-        index = 0;
-
-        for (int i = 0; i < totalPillar; i++)
-        {
-            if (myPillar[i] != nullptr && myPlayer->checkForCollision(myPillar[i], direction))
-            {
-                index = i;
-                break;
-            }
-        }
-        
-        //done by dennis wong
-        // Player still survive. If not skip this
-        if (myPlayer != nullptr && direction != 0)
-        {
-            // Player Direction (Collision is false then move)
-            if (myPlayer->checkForCollision(level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')), direction) == false)
-            {
-                switch (direction)
-                {
-                    //TODO: find out why character still can move out
-                case 1: // UP
-                    if ((myPlayer->getPosition().getRow() - 1) > -1) myPlayer->MoveObject(0, -1);
-                    break;
-
-                case 2: // LEFT
-                    if ((myPlayer->getPosition().getColumn() - 1) > -1) myPlayer->MoveObject(-1, 0);
-                    break;
-
-                case 3: // DOWN
-                    if ((myPlayer->getPosition().getRow() + 1) < 15) myPlayer->MoveObject(0, 1);
-                    break;
-
-                case 4: // RIGHT
-                    if ((myPlayer->getPosition().getColumn() + 1) < 35) myPlayer->MoveObject(1, 0);
-                    break;
-
-                default: // STOP
-                    break;
-                }
-            }
-            else {
-                g_Console.writeToBuffer(0, 0, "Invalid movement");
-            }
-
-            // Item Collector from Player (Money, Jewel)
-            index = 0;
-            direction = 0;
-
-            for (int i = 0; i < totalItem; i++)
-            {
-                if (moneyArr[i] != nullptr && myPlayer->isCollided(moneyArr[i]))
-                {
-                    myPlayer->Interact(moneyArr[i]);
-                    moneyArr[i]->Interact(myPlayer);
-                    break;
-                }
-            }
-
-            //added by timothy
-            if (myPlayer->checkIsOOB() != 0) {
-                g_sChar.m_cLocation.X = myPlayer->getPosition().getColumn() + 10;
-                g_sChar.m_cLocation.Y = myPlayer->getPosition().getRow() + 3;
-            }
-            else {
-                g_sChar.m_cLocation.X = myPlayer->getPosition().getColumn() + 10;
-                g_sChar.m_cLocation.Y = myPlayer->getPosition().getRow() + 3;
-            }
-        }
-}
-
-// Waiting to be modified (From denniswong10)
-void processUserInput()
-{
-     // quits the game if player hits the escape key
-    if (g_skKeyEvent[K_ESCAPE].keyReleased)
-        g_eGameState = S_PAUSE;
-    if (g_mouseEvent.mousePosition.Y == 2 && (g_mouseEvent.mousePosition.X > 91 && g_mouseEvent.mousePosition.X < 99) && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
-        g_eGameState = S_PAUSE;
-    } 
 }
 
 //--------------------------------------------------------------
@@ -475,9 +889,15 @@ void render()
     {
     case S_SPLASHSCREEN: renderSplashScreen();
         break;
-    case S_GAME: 
+    case S_GAME:
         renderGame();
         renderFramerate();      // renders debug information, frame rate, elapsed time, etc
+        break;
+    case S_WIN:
+        renderWinScreen();
+        break;
+    case S_FAIL:
+        renderLoseScreen();
         break;
     case S_TIMESUP:
         rendertimesup();
@@ -493,6 +913,9 @@ void render()
         break;
     case S_KEYINNAME:
         renderInputPlayerID();
+        break;
+    case S_MINIGAME1:
+        renderMinigame1();
         break;
     }
     renderToScreen();       // dump the contents of the buffer to the screen, one frame worth of game
@@ -510,9 +933,10 @@ void renderToScreen()
     g_Console.flushBufferToConsole();
 }
 
-void renderSplashScreen()  // renders the splash screen
+// renders the splash screen
+void renderSplashScreen()
 {
-   COORD c;
+    COORD c;
     std::string outputStr;
     for (unsigned int i = 0; i < titleart.size(); i++) {
         c.X = 9;
@@ -545,35 +969,33 @@ void renderSplashScreen()  // renders the splash screen
     }
 }
 
-void renderGame()
+void renderMap()
 {
-    renderMap();        // Suggestion changes from denniswong10
-    renderCharacter();  // Implemented by denniswong10 (Update renderCharacter)
-    renderUI();
-}
-
-void renderMap() // Suggestion by denniswong10 (Display object into the screen)
-{
-    //TODO: figureoutwhydontwork
     COORD c;
     g_Console.writeToBuffer(10, 2, "o", BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
-    std::string outputStr = "Live: Camera " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getRoomPos();
-    g_Console.writeToBuffer(12, 2, outputStr, BACKMATCHTEXT);
-    renderLocationMap(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
+    std::string outputStr = "Live: Camera " + std::to_string(myPlayer->getRoomPos('x')) + std::to_string(myPlayer->getRoomPos('y'));
+    g_Console.writeToBuffer(14, 2, outputStr, BACKMATCHTEXT);
+    for (int i = 3; i < 18; ++i) {
+        for (int j = 10; j < 45; j++) {
+            c.X = j;
+            c.Y = i;
+            g_Console.writeToBuffer(c, " ", level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getTile(j - 10, i - 3).get_tile_color());
+        }
+    }
     if (g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
         for (int i = 3; i < 18; i++) {
             for (int j = 10; j < 45; j++) {
                 c.X = j;
                 c.Y = i;
-                level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).set_lights(true);
+                isLightsOn = false;
                 g_Console.writeToBuffer(c, " ", COLOURS::BLACK);
-                g_Console.writeToBuffer(10, 18, "System: Error 404: The lights have been hacked", BACKMATCHTEXT);
-                g_Console.writeToBuffer(18, 10, "Error: No signal", BACKMATCHTEXT);
+                g_Console.writeToBuffer(10, 18, "System: Error 404: The system been hacked", BACKMATCHTEXT);
+                g_Console.writeToBuffer(20, 10, "Error: No signal", FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
             }
         }
     }
     else {
-        level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).set_lights(false);
+        isLightsOn = true;
         std::string outputStr = "System: Location name: " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getName();
         g_Console.writeToBuffer(10, 18, outputStr, BACKMATCHTEXT);
     }
@@ -584,9 +1006,9 @@ void renderMap() // Suggestion by denniswong10 (Display object into the screen)
             c.X = i;
             c.Y = j;
             if (level_map.get_minmap_char((i - 48) / 2, j - 3) == 'J') {
-                g_Console.writeToBuffer(48, 3, "  ", COLOURS::DARKGOLD);
+                g_Console.writeToBuffer(c, "  ", COLOURS::DARKGOLD);
             }
-            if (level_map.get_minmap_char((i - 48) / 2, j - 3) == 'X') {
+            else if (level_map.get_minmap_char((i - 48) / 2, j - 3) == 'X') {
                 g_Console.writeToBuffer(c, "  ", COLOURS::RED);
             }
             else {
@@ -594,18 +1016,42 @@ void renderMap() // Suggestion by denniswong10 (Display object into the screen)
             }
         }
     }
-    outputStr = "System: Now in " + std::to_string(myPlayer->getRoomPos('x')) + ", " + std::to_string(myPlayer->getRoomPos('y'));
-    g_Console.writeToBuffer(48, 7, outputStr, BACKMATCHTEXT);
 }
 
-// Modified by denniswong10 (Display character into the screen)
 void renderCharacter()
 {
-    // Draw the location of the character
-    if (myPlayer != nullptr) g_Console.writeToBuffer(g_sChar.m_cLocation.X, g_sChar.m_cLocation.Y, myPlayer->getEntityChar(), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+    if (myPlayer != nullptr) {
+        if (!g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED)
+            g_Console.writeToBuffer(g_sChar.m_cLocation.X, g_sChar.m_cLocation.Y, myPlayer->getEntityChar(), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+    }
 }
 
-// Modified by denniswong10 (Display UI into the screen)
+void renderEnemies()
+{
+    // Draw the location of the enemy
+    for (unsigned int i = 0; i < std::size(enemies); i++)
+    {
+        if (enemies[i] != nullptr && !g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED)
+        {
+            COORD enemyPos;
+            enemyPos.X = enemies[i]->getEnemyPosX();
+            enemyPos.Y = enemies[i]->getEnemyPosY();
+            g_Console.writeToBuffer(enemyPos, enemies[i]->getEntityChar(), 0x0040);
+        }
+    }
+}
+
+void renderJewel()
+{
+    if (jewel != nullptr && !g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED)
+    {
+        COORD jewelPos;
+        jewelPos.X = jewel->getCollPosX();
+        jewelPos.Y = jewel->getCollPosY();
+        g_Console.writeToBuffer(jewelPos, jewel->getEntityChar(), COLOURS::DARKGOLD);
+    }
+}
+
 void renderFramerate()
 {
     //COORD c;
@@ -615,7 +1061,7 @@ void renderFramerate()
     //ss << 1.0 / g_dDeltaTime << "fps";
     //c.X = g_Console.getConsoleSize().X - 9;
     //c.Y = 0;
-    //g_Console.writeToBuffer(c, ss.str());
+    ////g_Console.writeToBuffer(c, ss.str());
 }
 
 void renderUI()
@@ -624,20 +1070,20 @@ void renderUI()
     c.X = 48;
     c.Y = 9;
     std::string outputStr;
-    outputStr = "Money Stolen: $" + std::to_string(Player::CheckOnMoney() * 1000);
+    outputStr = "Money Stolen: $" + std::to_string(totalItem * 1000);
     g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     c.Y++;
     //edited by aloysius (timer)
-    double timer = (181 - g_dElapsedTime);
+    double timer = (121 - g_dElapsedTime);
     outputStr = "Time remaining: " + std::to_string((int)timer) + " seconds";
-    if ((181 - g_dElapsedTime) < 60) {
+    if (timer < 60) {
         g_Console.writeToBuffer(c, outputStr, BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
     }
     else {
         g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     }
-    points = ((Player::CheckOnMoney() * 100) + (((int)(181 - g_dElapsedTime)) * 10));
-    if ((181 - g_dElapsedTime) < 0) {
+    points = ((totalItem * 100) + (((int)timer) * 10));
+    if (timer < 0) {
         g_pregameElapsedtime = 0.0;
         g_eGameState = S_TIMESUP;
     }
@@ -650,15 +1096,27 @@ void renderUI()
 
 }
 
-void renderLocationMap(int x, int y) {
-    COORD c;
-    for (int i = 3; i < 18; ++i) {
-        for (int j = 10; j < 45; j++) {
-            c.X = j;
-            c.Y = i;
-            g_Console.writeToBuffer(c, " ", level_map.get_map_grid(x, y).getTile(j - 10, i - 3).get_tile_color());
-        }
+void renderGame()
+{
+    if (Player::isPlayerAlive() == true)
+    {
+        renderMap();        // renders the map to the buffer first
+        renderCharacter();  // renders the character into the buffer
+        renderEnemies();
+        renderJewel();
+        renderUI();
     }
+    else
+    {
+        renderLoseScreen();
+    }
+    /*if (Player::isPlayerAlive() == true && Player::isJewelCaptured() == true)
+    {
+        if (myPlayer->getObjectPosition().getColumn() == 3 && myPlayer->getObjectPosition().getRow() == 3)
+        {
+            renderWinScreen();
+        }
+    }*/
 }
 
 void rendertimesup()
@@ -697,24 +1155,51 @@ void rendertimesup()
 }
 
 void renderWinScreen() {
+    g_eGameState = S_WIN;
+    
     COORD c;
     std::string outputStr;
-    for (unsigned int i = 0; i < timesupart.size(); i++) {
+    for (unsigned int i = 0; i < winart.size(); i++) {
         c.X = 4;
         c.Y = i + 1;
-        outputStr = timesupart[i];
+        outputStr = winart[i];
         g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     }
 }
 
 void renderLoseScreen() {
+    g_eGameState = S_FAIL;
+    
     COORD c;
     std::string outputStr;
-    for (unsigned int i = 0; i < timesupart.size(); i++) {
-        c.X = 4;
+    for (unsigned int i = 0; i < loseart.size(); i++) {
+        c.X = 8;
         c.Y = i + 1;
-        outputStr = timesupart[i];
+        outputStr = loseart[i];
         g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    }
+    c.Y += 3;
+    c.X = g_Console.getConsoleSize().X / 2 - 10;
+    outputStr = "Total points:   " + std::to_string(points);
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    c.Y++;
+    c.X = g_Console.getConsoleSize().X / 2 - 5;
+    g_Console.writeToBuffer(c, "MAIN MENU", BACKMATCHTEXT);
+    c.Y++;
+    g_Console.writeToBuffer(c, "ADD TO LEADERBOARD", BACKMATCHTEXT);
+    c.Y += 2;
+    c.X = g_Console.getConsoleSize().X / 2 - 8;
+    outputStr = "Continue?     " + std::to_string((int)(20 - g_pregameElapsedtime));
+    g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
+    if (g_mouseEvent.mousePosition.Y == 15) {
+        c.X = g_Console.getConsoleSize().X / 2 - 7;
+        c.Y = 15;
+        g_Console.writeToBuffer(c, "> MAIN MENU", BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
+    }
+    if (g_mouseEvent.mousePosition.Y == 16) {
+        c.X = g_Console.getConsoleSize().X / 2 - 7;
+        c.Y = 16;
+        g_Console.writeToBuffer(c, "> ADD TO LEADERBOARD", BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
     }
 }
 
@@ -723,10 +1208,15 @@ void renderPauseScreen() {
     g_Console.writeToBuffer(10, 2, "o", BACKGROUND_INTENSITY | FOREGROUND_RED);
     std::string outputStr = "Live: Camera " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getRoomPos();
     g_Console.writeToBuffer(12, 2, outputStr, BACKMATCHTEXT);
-    renderLocationMap(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y'));
     outputStr = "System: Location name: " + level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getName();
     g_Console.writeToBuffer(10, 18, outputStr, BACKMATCHTEXT);
-
+    for (int i = 3; i < 18; ++i) {
+        for (int j = 10; j < 45; j++) {
+            c.X = j;
+            c.Y = i;
+            g_Console.writeToBuffer(c, " ", level_map.get_map_grid(myPlayer->getRoomPos('x'), myPlayer->getRoomPos('y')).getTile(j - 10, i - 3).get_tile_color());
+        }
+    }
     level_map.update_minmap_char(*myPlayer);
     for (int j = 3; j < 7; j++) {
         for (int i = 48; i < 56; i += 2) {
@@ -778,7 +1268,7 @@ void renderPauseScreen() {
 }
 
 void renderLeaderboard() {
-    COORD c;
+    /*COORD c;
     std::string outputStr;
     for (unsigned int i = 0; i < leaderboardart.size(); i++) {
         c.X = 1;
@@ -787,12 +1277,14 @@ void renderLeaderboard() {
         g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     }
     if (g_skKeyEvent[K_S].keyDown)
-        scrollNum++;
-    else if (g_skKeyEvent[K_W].keyDown)
+        if ((scrollNum + 10) < ((unsigned)leaderboard.getSize())) {
+            scrollNum++;
+        }
+    if (g_skKeyEvent[K_W].keyDown)
         if ((scrollNum - 1) < -1)
             scrollNum--;
     leaderboard.printLeaderboard(g_Console, scrollNum);
-    g_Console.writeToBuffer(5, 18, "< Main Menu", BACKMATCHTEXT);
+    g_Console.writeToBuffer(5, 18, "< Main Menu", BACKMATCHTEXT);*/
 }
 
 void renderInputPlayerID() {
@@ -871,10 +1363,12 @@ void keyInName()
     if (g_skKeyEvent[K_BACKSPACE].keyReleased)
         if (playerId != "")
             playerId.pop_back();
-    if (g_mouseEvent.mousePosition.X < 99 && g_mouseEvent.mousePosition.X > 85 && g_mouseEvent.mousePosition.Y == 17 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
+    
+    //WIP
+    /*if (g_mouseEvent.mousePosition.X < 99 && g_mouseEvent.mousePosition.X > 85 && g_mouseEvent.mousePosition.Y == 17 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
         leaderboard.add_new_score(playerId, points);
         g_eGameState = S_LEADERBOARD;
-    }
+    }*/
 }
 
 void renderPreGameAnimation() {
@@ -903,4 +1397,54 @@ void animationInteraction() {
         level_map.generateNewMap();
         g_eGameState = S_GAME;
     }
+}
+
+void renderMinigame1() {
+    COORD c;
+    c.X = g_Console.getConsoleSize().X / 2 - 37;
+    c.Y = 8;
+    g_Console.writeToBuffer(c, "HACK THE SYSTEM BY MATCHING THE EQUATIONS", BACKMATCHTEXT);
+    c.Y++;
+    g_Console.writeToBuffer(c, "HOVER OVER THE NUMBERS AND PRESS SPACE TO ADD ONE", BACKMATCHTEXT);
+    g_Console.writeToBuffer(30, 12, std::to_string(minigamedennis->getNumber(0)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(35, 12, minigamedennis->get_operator(0), BACKMATCHTEXT);
+    g_Console.writeToBuffer(40, 12, std::to_string(minigamedennis->getNumber(1)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(45, 12, minigamedennis->get_operator(1), BACKMATCHTEXT);
+    g_Console.writeToBuffer(50, 12, std::to_string(minigamedennis->getNumber(2)), BACKMATCHTEXT); 
+    g_Console.writeToBuffer(65, 12, std::to_string(minigamedennis->getRandInt(1)), BACKMATCHTEXT);
+
+    g_Console.writeToBuffer(30, 14, std::to_string(minigamedennis->getNumber(3)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(35, 14, minigamedennis->get_operator(2), BACKMATCHTEXT);
+    g_Console.writeToBuffer(40, 14, std::to_string(minigamedennis->getNumber(4)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(45, 14, minigamedennis->get_operator(3), BACKMATCHTEXT);
+    g_Console.writeToBuffer(50, 14, std::to_string(minigamedennis->getNumber(5)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(65, 14, std::to_string(minigamedennis->getRandInt(2)), BACKMATCHTEXT);
+
+    g_Console.writeToBuffer(30, 16, std::to_string(minigamedennis->getNumber(6)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(35, 16, minigamedennis->get_operator(4), BACKMATCHTEXT);
+    g_Console.writeToBuffer(40, 16, std::to_string(minigamedennis->getNumber(7)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(45, 16, minigamedennis->get_operator(5), BACKMATCHTEXT);
+    g_Console.writeToBuffer(50, 16, std::to_string(minigamedennis->getNumber(8)), BACKMATCHTEXT);
+    g_Console.writeToBuffer(65, 16, std::to_string(minigamedennis->getRandInt(3)), BACKMATCHTEXT);
+
+}
+
+void updateMinigame1() {
+
+    if (g_mouseEvent.mousePosition.Y == 12 && g_mouseEvent.mousePosition.X >= 29 && g_mouseEvent.mousePosition.X <= 31 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(0);
+    if (g_mouseEvent.mousePosition.Y == 12 && g_mouseEvent.mousePosition.X >= 39 && g_mouseEvent.mousePosition.X <= 41 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(1);
+    if (g_mouseEvent.mousePosition.Y == 12 && g_mouseEvent.mousePosition.X >= 49 && g_mouseEvent.mousePosition.X <= 51 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(2);
+
+    if (g_mouseEvent.mousePosition.Y == 14 && g_mouseEvent.mousePosition.X >= 29 && g_mouseEvent.mousePosition.X <= 31 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(3);
+    if (g_mouseEvent.mousePosition.Y == 14 && g_mouseEvent.mousePosition.X >= 39 && g_mouseEvent.mousePosition.X <= 41 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(4);
+    if (g_mouseEvent.mousePosition.Y == 14 && g_mouseEvent.mousePosition.X >= 49 && g_mouseEvent.mousePosition.X <= 51 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(5);
+
+    if (g_mouseEvent.mousePosition.Y == 16 && g_mouseEvent.mousePosition.X >= 29 && g_mouseEvent.mousePosition.X <= 31 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(6);
+    if (g_mouseEvent.mousePosition.Y == 16 && g_mouseEvent.mousePosition.X >= 39 && g_mouseEvent.mousePosition.X <= 41 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(7);
+    if (g_mouseEvent.mousePosition.Y == 16 && g_mouseEvent.mousePosition.X >= 49 && g_mouseEvent.mousePosition.X <= 51 && g_skKeyEvent[K_SPACE].keyReleased) minigamedennis->addNumber(8);
+
+    if (minigamedennis->checkResult(minigamedennis->getResult(1), 1) && minigamedennis->checkResult(minigamedennis->getResult(2), 2) && minigamedennis->checkResult(minigamedennis->getResult(3), 3)) {
+        g_eGameState = S_GAME;
+    }
+    
 }
