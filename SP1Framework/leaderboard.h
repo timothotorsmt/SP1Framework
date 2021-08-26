@@ -18,7 +18,8 @@ public:
 
 	//getters
 	bool find_name_exists(std::string name);
-	
+	int getSize();
+
 	//setters
 	void add_new_score(std::string name, int score);
 	void resetLeaderboard();
@@ -28,3 +29,4 @@ public:
 	//others 
 	void printLeaderboard(Console& g_Console, unsigned int i);
 };
+
