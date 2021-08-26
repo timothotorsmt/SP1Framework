@@ -1,7 +1,6 @@
 #include "Grid.h"
 #include "Colours.h"
 
-//done by timothy
 //construct grid
 Grid::Grid() : room_pos("--"), name("")
 {
