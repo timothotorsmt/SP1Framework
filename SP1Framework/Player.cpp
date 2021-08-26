@@ -8,9 +8,9 @@ Player::Player()
 {
 	isPlayerCreate = true;
 	entity_char = 'P';
-	objectPosition.setCoordinates(17, 6, true);
-	roomPosX = 1;
-	roomPosY = 0;
+	objectPosition.setCoordinates(17, 7, true);
+	roomPosX = 3;
+	roomPosY = 3;
 }
 
 Player::~Player()
