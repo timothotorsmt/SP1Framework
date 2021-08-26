@@ -821,7 +821,7 @@ void updateGame()
 
 void leaderboardUpdate() {
     if (g_mouseEvent.mousePosition.Y == 18 && g_mouseEvent.mousePosition.X < 17 && g_mouseEvent.buttonState == FROM_LEFT_1ST_BUTTON_PRESSED) {
-        g_eGameState = S_SPLASHSCREEN;
+        init();
     }
 }
 
