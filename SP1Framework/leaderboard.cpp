@@ -26,6 +26,11 @@ bool Leaderboard::find_name_exists(std::string name)
 	return false;
 }
 
+int Leaderboard::getSize()
+{
+	return leaderboard.size();
+}
+
 void Leaderboard::add_new_score(std::string name, int score)
 {
 	leaderboard.push_back(std::make_pair(score, name));
@@ -46,7 +51,7 @@ void Leaderboard::importLeaderboard()
 	std::ifstream ReadFile("leaderboard.txt");
 	while (!ReadFile.eof()) {
 		std::string playerId;
-		int score; 
+		int score;
 		ReadFile >> playerId >> score;
 		//add score into leaderboard
 		leaderboard.push_back(std::make_pair(score, playerId));
@@ -70,8 +75,6 @@ void Leaderboard::exportLeaderboard()
 
 void Leaderboard::printLeaderboard(Console& g_Console, unsigned int i)
 {
-	//TODO: print leaderboard
-	//TODO: scrolling mechanism ??
 	COORD c;
 	c.X = ((g_Console.getConsoleSize().X / 2) - 10);
 	if (leaderboard.size() < 10) {
