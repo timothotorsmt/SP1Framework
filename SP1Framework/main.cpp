@@ -2,25 +2,30 @@
 
 #include "Framework\timer.h"
 #include "game.h"
+#include <iostream>
 
 CStopWatch g_Timer;                            // Timer function to keep track of time and the frame rate
-bool g_bQuitGame = false;                    // Set to true if you want to quit the game
+bool g_bQuitGame = false;                     // Set to true if you want to quit the game
+bool restartGame = false;
 const unsigned char gc_ucFPS = 100;                // FPS of this game
 const unsigned int gc_uFrameTime = 1000 / gc_ucFPS;    // time for each frame
 
 //main loop declaration
 void mainLoop( void );
 
-// TODO:
 // Bug in waitUntil. it waits for the time from getElapsedTime to waitUntil, but should be insignificant.
 
 // main function - starting function
 // You should not be modifying this unless you know what you are doing
 int main( void )
 {
-    init();      // initialize your variables
-    mainLoop();  // main loop
-    shutdown();  // do clean up, if any. free memory.
+    do {
+        std::srand(time(NULL));
+        restartGame = false;
+        init();      // initialize your variables
+        mainLoop();  // main loop
+        shutdown();  // do clean up, if any. free memory.
+    } while (restartGame == true);
     
     return 0;
 }
@@ -35,7 +40,7 @@ int main( void )
 void mainLoop( void )
 {
     g_Timer.startTimer();    // Start timer to calculate how long it takes to render this frame
-    while (g_bQuitGame == false)      // run this loop until user wants to quit 
+    while (!g_bQuitGame)      // run this loop until user wants to quit 
     {        
         getInput();                         // get keyboard input
         update(g_Timer.getElapsedTime());   // update the game
