@@ -1,12 +1,13 @@
 #include "Map.h"
 
+//constructor for map
 Map::Map()
 {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			std::string roomNo = "";
-			roomNo += i;
-			roomNo += j;
+			roomNo += std::to_string(i);
+			roomNo += std::to_string(j);
 			level_map[i][j].setRoomPos(roomNo);
 			level_map[i][j].setDoorConfig();
 			minmap[i][j] = ' ';
@@ -14,8 +15,6 @@ Map::Map()
 	}
 	is_stolen = false;
 	minmap[0][0] = 'J';
-	isCurrentlyIn[0] = 3;
-	isCurrentlyIn[1] = 3;
 }
 
 Map::~Map()
@@ -32,15 +31,10 @@ Grid Map::get_map_grid(int x, int y)
 	return level_map[y][x];
 }
 
-bool Map::check_is_stolen()
+bool Map::check_is_stolen(Player& player)
 {
-	is_stolen = (player.CheckOnJewel() == true) ? (true) : (false);
+	is_stolen = (player.isJewelCaptured() == true) ? (true) : (false);
 	return is_stolen;
-}
-
-int Map::getCurrentBox(int i)
-{
-	return isCurrentlyIn[1];
 }
 
 std::string Map::getObjective()
@@ -49,7 +43,7 @@ std::string Map::getObjective()
 		return "Steal the jewel";
 	}
 	else {
-		return "Escape the museum";
+		return "Escape!";
 	}
 }
 
@@ -60,21 +54,37 @@ void Map::update_minmap_char(Player& player)
 			minmap[i][j] = ' ';
 		}
 	}
-	if (player.CheckOnJewel() == true) {
+	if (true) {
 		minmap[0][0] = 'J';
 	}
 	minmap[player.getRoomPos('y')][player.getRoomPos('x')] = 'X';
+}
 
 void Map::distributerandomfiles()
 {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (!(i == 0 && j == 0) || !(i == 3 && j == 3)) {
-				int randNum = std::rand() % filenames.size();
+				int randNum = std::rand() % (filenames.size());
 				level_map[i][j].importGrid(filenames[randNum]);
 			}
 		}
 	}
 	level_map[0][0].importGrid("jewelroom.txt");
 	level_map[3][3].importGrid("spawn.txt");
+}
+
+void Map::generateNewMap()
+{
+	distributerandomfiles();
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			std::string roomNo = "";
+			roomNo += std::to_string(i);
+			roomNo += std::to_string(j);
+			level_map[i][j].setRoomPos(roomNo);
+			level_map[i][j].setDoorConfig();
+			minmap[i][j] = ' ';
+		}
+	}
 }
