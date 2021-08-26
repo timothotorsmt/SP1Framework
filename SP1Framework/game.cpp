@@ -1074,7 +1074,7 @@ void renderUI()
     g_Console.writeToBuffer(c, outputStr, BACKMATCHTEXT);
     c.Y++;
     //edited by aloysius (timer)
-    double timer = (121 - g_dElapsedTime);
+    double timer = (181 - g_dElapsedTime);
     outputStr = "Time remaining: " + std::to_string((int)timer) + " seconds";
     if (timer < 60) {
         g_Console.writeToBuffer(c, outputStr, BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY);
