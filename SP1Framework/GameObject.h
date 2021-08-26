@@ -2,9 +2,6 @@
 #include "Position.h"
 #include "Grid.h"
 
-//made by dennis wong
-//edited by timothy
-//edited by jeremy
 class GameObject
 {
 protected:
