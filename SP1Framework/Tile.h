@@ -1,6 +1,7 @@
 #pragma once
 #include "Position.h"
 #include "Framework/console.h"
+
 class Tile
 {
 private:
@@ -19,7 +20,6 @@ public:
 	bool get_is_wall();
 	bool get_is_occupied();
 	WORD get_tile_color();
-	bool get_can_be_seen();
 
 	//SETTERS
 	void set_tile_char(char c);
