@@ -24,7 +24,7 @@ int Position::getColumn()
 
 void Position::setCoordinates(int c, int r, bool set)
 {
-	if (set) {
+	if (set == true) {
 		row = r;
 		column = c;
 	}
