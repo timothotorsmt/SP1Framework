@@ -1,0 +1,191 @@
+Author : Timothy Luk Commit : Rename SP1Framework/OTHERFILES/leaderboard.txt to SP1Framework/leaderboard.txt
+Author : Timothy Luk Commit : Update game.cpp
+Author : Timothy Luk Commit : Add files via upload
+Author : CHIA-QI-MING-JEREMY Commit : Update Grid.cpp
+Author : Timothy Luk Commit : Merge pull request #32 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-17
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Player.cpp
+Author : CHIA-QI-MING-JEREMY Commit : README
+Author : CHIA-QI-MING-JEREMY Commit : Update leaderboard.txt
+Author : CHIA-QI-MING-JEREMY Commit : The Prehistoric Exhibit
+Author : CHIA-QI-MING-JEREMY Commit : The Garden
+Author : CHIA-QI-MING-JEREMY Commit : Update jewelroom.txt
+Author : CHIA-QI-MING-JEREMY Commit : Haute Couture Gallery
+Author : CHIA-QI-MING-JEREMY Commit : Update main.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update game.h
+Author : CHIA-QI-MING-JEREMY Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Tile.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Tile.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update ReadASCIItext.h
+Author : CHIA-QI-MING-JEREMY Commit : Update ReadASCIItext.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Position.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Position.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Player.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Player.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Pathfinding.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Pathfinding.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Money.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Money.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Minigame 1
+Author : CHIA-QI-MING-JEREMY Commit : Minigame 1
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Timothy
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Timothy
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Timothy
+Author : CHIA-QI-MING-JEREMY Commit : Update Map.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Map.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Grid.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Grid.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update GameObject.h
+Author : CHIA-QI-MING-JEREMY Commit : Update GameObject.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Enemy.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Enemy.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Colours.h
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Jeremy
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Jeremy
+Author : CHIA-QI-MING-JEREMY Commit : Removed lights (added to game.cpp instead)
+Author : Timothy Luk Commit : Delete Timer.cpp
+Author : Timothy Luk Commit : Delete preprojtest directory
+Author : Timothy Luk Commit : Merge pull request #24 from timothotorsmt/timothotorsmt-patch-4
+Author : Timothy Luk Commit : Merge pull request #25 from timothotorsmt/timothotorsmt-patch-5
+Author : Timothy Luk Commit : Create ReadASCIItext.cpp
+Author : Timothy Luk Commit : Create ReadASCIItext.h
+Author : Timothy Luk Commit : Create help.txt
+Author : Timothy Luk Commit : Create leaderboard.txt
+Author : Timothy Luk Commit : Updated game.cpp
+Author : Timothy Luk Commit : Create jewelroom.txt
+Author : Timothy Luk Commit : Create spawn.txt
+Author : Timothy Luk Commit : Rename leaderboard.txt to leaderboardart.txt
+Author : Timothy Luk Commit : Create leaderboard.cpp
+Author : Timothy Luk Commit : Create leaderboard.h
+Author : Timothy Luk Commit : Created keys.h
+Author : Timothy Luk Commit : Updated game.h
+Author : Timothy Luk Commit : Create title.txt
+Author : Timothy Luk Commit : Create paused.txt
+Author : Timothy Luk Commit : Create leaderboard.txt
+Author : CHIA-QI-MING-JEREMY Commit : Update Pathfinding.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Jeremy
+Author : Timothy Luk Commit : Merge pull request #22 from timothotorsmt/timothotorsmt-patch-2
+Author : Timothy Luk Commit : Merge pull request #23 from timothotorsmt/timothotorsmt-patch-3
+Author : Timothy Luk Commit : Update main.cpp
+Author : Timothy Luk Commit : Updated Game.h
+Author : Timothy Luk Commit : Edited game.cpp
+Author : Timothy Luk Commit : Update Tile.cpp
+Author : Timothy Luk Commit : Update Map.cpp
+Author : Timothy Luk Commit : Update Grid.h
+Author : Timothy Luk Commit : Update Grid.cpp
+Author : Timothy Luk Commit : Create win.txt
+Author : Timothy Luk Commit : Create timesup.txt
+Author : Timothy Luk Commit : Create failure.txt
+Author : Timothy Luk Commit : Merge pull request #16 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-5
+Author : Timothy Luk Commit : Merge pull request #17 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-6
+Author : Timothy Luk Commit : Merge pull request #18 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-7
+Author : Timothy Luk Commit : Merge pull request #19 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-8
+Author : Timothy Luk Commit : Merge pull request #20 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-9
+Author : Timothy Luk Commit : Merge pull request #21 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-10
+Author : CHIA-QI-MING-JEREMY Commit : Update Position.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Position.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Money.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Money.h
+Author : CHIA-QI-MING-JEREMY Commit : Update GameObject.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update GameObject.h
+Author : Timothy Luk Commit : Merge pull request #15 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-4
+Author : Timothy Luk Commit : Merge pull request #14 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-3
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Jeremy
+Author : Timothy Luk Commit : Merge pull request #13 from timothotorsmt/DankDankHub-patch-2
+Author : CHIA-QI-MING-JEREMY Commit : Implemented by Jeremy
+Author : Timothy Luk Commit : Merge pull request #12 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-2
+Author : Timothy Luk Commit : Merge pull request #11 from timothotorsmt/CHIA-QI-MING-JEREMY-patch-1
+Author : DankDankHub Commit : Update game.cpp
+Author : CHIA-QI-MING-JEREMY Commit : Update Player.h
+Author : CHIA-QI-MING-JEREMY Commit : Update Player.cpp
+Author : Timothy Luk Commit : Merge pull request #8 from timothotorsmt/DankDankHub-patch-1
+Author : DankDankHub Commit : Update game.cpp
+Author : Timothy Luk Commit : Update and rename Grid,cpp to Grid.cpp
+Author : Timothy Luk Commit : Update Grid.h
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : Timothy Luk Commit : Map.cpp ??
+Author : Timothy Luk Commit : Created Map,h
+Author : Timothy Luk Commit : Create Grid.cpp
+Author : Timothy Luk Commit : Add grid.h
+Author : CHIA-QI-MING-JEREMY Commit : Add files via upload
+Author : Timothy Luk Commit : Create Tile.cpp
+Author : Timothy Luk Commit : Create Tile.h
+Author : Timothy Luk Commit : Stores all the color names
+Author : denniswong10 Commit : Merge pull request #6 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : DankDankHub Commit : Add files via upload
+Author : Timothy Luk Commit : i hate joash
+Author : denniswong10 Commit : Merge pull request #5 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : denniswong10 Commit : Merge pull request #4 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : denniswong10 Commit : Merge pull request #3 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemeted by denniswong10
+Author : denniswong10 Commit : Merge pull request #2 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : denniswong10 Commit : Merge pull request #1 from timothotorsmt/denniswong10---My-Files
+Author : denniswong10 Commit : Implemented by denniswong10
+Author : Timothy Luk Commit : Commented one line out
+Author : Timothy Luk Commit : Delete smth
+Author : Timothy Luk Commit : 15/8/21 Pre-project tests
+Author : Timothy Luk Commit : Delete Grid.cpp
+Author : Timothy Luk Commit : Delete Grid.h
+Author : Timothy Luk Commit : Delete Map.cpp
+Author : Timothy Luk Commit : Delete Map.h
+Author : Timothy Luk Commit : Delete Position.cpp
+Author : Timothy Luk Commit : Delete Position.h
+Author : Timothy Luk Commit : Delete Tile.cpp
+Author : Timothy Luk Commit : Delete Tile.h
+Author : Timothy Luk Commit : Create smth
+Author : Timothy Luk Commit : add files that i made lol
+Author : SIM TZE JAN Commit : added winmm.lib to the dependency in Release mode
+Author : SIM TZE JAN Commit : Updated the framework to show how event input handlers work Added a keyboard input handler Added a mouse input handler Sample code on how to interpret input events.
+Author : SIM TZE JAN Commit : Implemented Event based input for keyboard and mouse If a keyboard or mouse event has triggered in the console, it will call the respective keyboard or mouse handler set by the user.
+Author : Sim Tze Jan Commit : Added in a parameter in writeToBuffer to indicate the length of the string to write. Without this parameter, the function will write until the null character.
+Author : SIM TZE JAN Commit : Optimise the writeToBuffer function so that it does not need to check the length of the string. clearBuffer now access the memory location once, instead of twice. writeToConsole does not need to create temporary variables anymore.
+Author : SIM TZE JAN Commit : Updated project file for Visual Studio 2013
+Author : Sim Tze Jan Commit : Updated some tips
+Author : Sim Tze Jan Commit : Update Readme.md
+Author : unknown Commit : Fixed a bug in resizing the console window size. Now the console size scales beautifully.
+Author : Sim Tze Jan Commit : Merge branch 'master' of https://github.com/tzejan/SP1Framework
+Author : Sim Tze Jan Commit : Bug fix in the calculation of the last index in the screen buffer
+Author : tzejan Commit : Update README.md
+Author : Sim Tze Jan Commit : Added a better example of what is expected in the update and render loops Added a debouncing code. To prevent accidental trigger of actions because of high framerates and slow human reflexes.
+Author : Sim Tze Jan Commit : renamed console variable
+Author : Sim Tze Jan Commit : Merge branch 'writeToBuffer'
+Author : unknown Commit : Added in comments by Victor
+Author : tzejan Commit : Update README.md
+Author : tzejan Commit : Update README.md
+Author : Sim Tze Jan Commit : Added in a function to set the console font
+Author : Sim Tze Jan Commit : Added overload functions for write to buffer so that it does not need to take in a COORD type
+Author : Sim Tze Jan Commit : put the codes into their respective functions added more comments to guide users of this framework
+Author : Sim Tze Jan Commit : Write to buffer functions are now in the console object Added more comments and description to help students with the framework
+Author : Sim Tze Jan Commit : Merge branch 'writeToBuffer' of https://github.com/tzejan/SP1Framework into writeToBuffer
+Author : Sim Tze Jan Commit : Pass the C++ string as a reference instead
+Author : Jan Sim Commit : Reuse code for writing to buffer Fixed a bug in writing buffer to console output
+Author : tzejan Commit : Update README.md
+Author : tzejan Commit : Update README.md
+Author : Jan Sim Commit : Added default parameter for attribute Put in sample code
+Author : Sim Tze Jan Commit : A faster console output No more flickers!
+Author : Sim Tze Jan Commit : test writing to a buffer then displaying it on the console
+Author : tzejan Commit : Update README.md
+Author : tzejan Commit : Updated readme
+Author : Sim Tze Jan Commit : Merge branch 'master' of https://github.com/tzejan/SP1Framework into SetConsoleSize
+Author : Sim Tze Jan Commit : Added a function to set the size of the console
+Author : tzejan Commit : Update README.md
+Author : Sim Tze Jan Commit : Added the output for elapsed time Added a delta time variable
+Author : Sim Tze Jan Commit : Merge branch 'master' of https://github.com/tzejan/SP1Framework
+Author : Sim Tze Jan Commit : Comment about potential bug
+Author : Jan Sim Commit : Update gotoXY function to take in COORD Implemented a function to detect keypress Gets the size of the console for limiting character movement purposes Implement a simple character movement with arrow key presses Renders a test coloured text Reduced frame rate to 5FPS Introduced beep sound Changed game loop to loop with a flag instead of returning from function Removed commented out code
+Author : Jan Sim Commit : Sample of getting the state of keys
+Author : Jan Sim Commit : Merge branch 'master' of https://github.com/tzejan/SP1Framework
+Author : Sim Tze Jan Commit : Added delta time to update function Used FPS to calculate frame time Used proper naming convention for global variables Updated timer class to keep track of elapsed time
+Author : Sim Tze Jan Commit : Added timer windows console stuff game loop update loop render loop
+Author : Jan Sim Commit : Updated ignore files
+Author : Jan Sim Commit : Merge branch 'master' of https://github.com/tzejan/SP1Framework
+Author : Jan Sim Commit : First commit for the SP1 Framework
+Author : tzejan Commit : Initial commit
